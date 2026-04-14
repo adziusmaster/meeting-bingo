@@ -5,13 +5,14 @@ import Typography from '@mui/material/Typography'
 import {
   subscribeToRoom, subscribeToPlayer, subscribeToPlayers,
   startGame, updateWords, initPlayerCard,
-  markTile, announceWinner, checkWin, getWinningCells, getOneAwayCells,
+  markTile, announceWinner, getOneAwayCells,
   resetGame, resetPlayerCards, sendReaction, subscribeToReactions,
   checkWinCondition, getWinConditionCells, computeCalledMarked,
   subscribeToChatMessages, sendChatMessage,
   getUserAchievements, unlockAchievement, getPlayerWins, getHatTrickCount,
   subscribeToUserAchievements,
-  getUserSelectedTheme, getUserTotalWins,
+  getUserSelectedTheme,
+  leaveRoom,
 } from '../firebase'
 import { DEFAULT_WORDS } from '../constants'
 import { playClick, playBingo } from '../sounds'
@@ -179,6 +180,11 @@ export default function GamePage({ roomCode, nickname, onLeave }: GamePageProps)
     await markTile(roomCode, nickname, newMarked)
   }
 
+  async function handleLeave() {
+    await leaveRoom(roomCode, nickname)
+    onLeave()
+  }
+
   async function handleReset() {
     didInitCard.current  = false
     didAnnounce.current  = false
@@ -237,7 +243,7 @@ export default function GamePage({ roomCode, nickname, onLeave }: GamePageProps)
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <GameHeader roomCode={roomCode} nickname={nickname} copied={copied} onCopyCode={copyCode} />
+      <GameHeader roomCode={roomCode} nickname={nickname} copied={copied} onCopyCode={copyCode} onLeave={handleLeave} />
 
       {room.status === 'waiting' && (
         <WaitingView

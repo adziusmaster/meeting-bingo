@@ -19,6 +19,9 @@ const CATEGORY_ICONS: Record<WordCategory, string> = {
   'Tech Standup':        '💻',
   'Sales Call':          '📞',
   'Management':          '📊',
+  'HR & People':         '🧑‍💼',
+  'Product Meeting':     '🗺️',
+  'Design Review':       '🎨',
 }
 
 export default function WordEditor({ wordInput, wordError, onChange, onStart }: WordEditorProps) {

@@ -8,6 +8,7 @@ import {
   getDocs,
   addDoc,
   updateDoc,
+  deleteDoc,
   onSnapshot,
   serverTimestamp,
   query,
@@ -287,6 +288,10 @@ export async function joinRoom(roomCode: string, nickname: string): Promise<stri
     })
   }
   return code
+}
+
+export async function leaveRoom(roomCode: string, nickname: string): Promise<void> {
+  await deleteDoc(doc(db, 'rooms', roomCode, 'players', nickname))
 }
 
 export async function updateWords(roomCode: string, words: string[]): Promise<void> {
