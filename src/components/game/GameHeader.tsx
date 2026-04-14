@@ -8,8 +8,12 @@ import Avatar from '@mui/material/Avatar'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import CheckIcon from '@mui/icons-material/Check'
 import ShareIcon from '@mui/icons-material/Share'
+import VolumeUpIcon from '@mui/icons-material/VolumeUp'
+import VolumeOffIcon from '@mui/icons-material/VolumeOff'
 import { useTheme } from '@mui/material/styles'
+import { useState } from 'react'
 import { auth } from '../../firebase'
+import { isSoundEnabled, setSoundEnabled } from '../../sounds'
 
 const APP_URL = 'https://meeting-bingo-a52cc.web.app'
 
@@ -24,6 +28,14 @@ export default function GameHeader({ roomCode, nickname, copied, onCopyCode }: G
   const { palette } = useTheme()
   const isDark = palette.mode === 'dark'
   const photoURL = auth.currentUser?.photoURL
+  const [sound, setSound] = useState(isSoundEnabled)
+
+  function toggleSound() {
+    setSound(prev => {
+      setSoundEnabled(!prev)
+      return !prev
+    })
+  }
 
   async function handleShare() {
     const joinUrl = `${APP_URL}?room=${roomCode}`
@@ -81,6 +93,11 @@ export default function GameHeader({ roomCode, nickname, copied, onCopyCode }: G
             '&:hover': { background: 'rgba(59,130,246,0.28)' },
           }}
         />
+        <Tooltip title={sound ? 'Mute sounds' : 'Unmute sounds'}>
+          <IconButton size="small" onClick={toggleSound} sx={{ color: 'text.secondary' }}>
+            {sound ? <VolumeUpIcon fontSize="small" /> : <VolumeOffIcon fontSize="small" />}
+          </IconButton>
+        </Tooltip>
         <Tooltip title="Invite people">
           <IconButton size="small" onClick={handleShare} sx={{ color: 'text.secondary' }}>
             <ShareIcon fontSize="small" />
