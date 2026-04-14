@@ -22,10 +22,12 @@ import CloseIcon from '@mui/icons-material/Close'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import LockIcon from '@mui/icons-material/Lock'
 import { useTheme } from '@mui/material/styles'
-import { auth, claimNick, checkNickTaken, getUserTotalWins, getUserAchievements, getUserSelectedTheme, saveUserTheme } from '../firebase'
+import { auth, claimNick, checkNickTaken, getUserTotalWins, getUserAchievements, getUserSelectedTheme, saveUserTheme, getPurchasedThemes, savePurchasedTheme } from '../firebase'
 import type { User } from '../firebase'
 import { CARD_THEMES } from '../themes'
 import { ACHIEVEMENTS } from '../achievements'
+import { isBillingSupported, purchaseTheme, getOwnedSkus } from '../purchases'
+import type { ThemeSku } from '../purchases'
 
 const PRIVACY_POLICY_URL = 'https://meeting-bingo-a52cc.web.app/privacy.html'
 const FEEDBACK_URL = 'https://github.com/adziusmaster/meeting-bingo/issues'
@@ -79,18 +81,52 @@ export default function SettingsPage({
   const [totalWins, setTotalWins]           = useState(0)
   const [unlockedAchievements, setUnlockedAchievements] = useState<string[]>([])
   const [selectedThemeId, setSelectedThemeId] = useState<string>('navy_night')
+  const [purchasedThemes, setPurchasedThemes] = useState<string[]>([])
+  const [billingSupported, setBillingSupported] = useState(false)
+  const [purchasing, setPurchasing] = useState<string | null>(null)
 
   useEffect(() => {
     Promise.all([
       getUserTotalWins(nickname),
       getUserAchievements(nickname),
       getUserSelectedTheme(nickname),
-    ]).then(([wins, achievements, themeId]) => {
+      getPurchasedThemes(nickname),
+      isBillingSupported(),
+    ]).then(([wins, achievements, themeId, purchased, billing]) => {
       setTotalWins(wins)
       setUnlockedAchievements(achievements)
       setSelectedThemeId(themeId)
+      setPurchasedThemes(purchased)
+      setBillingSupported(billing)
     }).catch(() => {})
   }, [nickname])
+
+  async function handleRestorePurchases() {
+    const ownedSkus = await getOwnedSkus()
+    for (const sku of ownedSkus) {
+      const theme = CARD_THEMES.find(t => t.skuId === sku)
+      if (theme && !purchasedThemes.includes(theme.id)) {
+        await savePurchasedTheme(nickname, theme.id)
+        setPurchasedThemes(prev => [...prev, theme.id])
+      }
+    }
+  }
+
+  async function handleBuyTheme(skuId: ThemeSku, themeId: string) {
+    if (purchasing) return
+    setPurchasing(themeId)
+    try {
+      await purchaseTheme(skuId)
+      await savePurchasedTheme(nickname, themeId)
+      setPurchasedThemes(prev => [...prev, themeId])
+      // Auto-select newly purchased theme
+      await handleSelectTheme(themeId)
+    } catch (e) {
+      // User cancelled or error — silently ignore
+    } finally {
+      setPurchasing(null)
+    }
+  }
 
   async function handleSelectTheme(themeId: string) {
     setSelectedThemeId(themeId)
@@ -236,22 +272,35 @@ export default function SettingsPage({
             <Typography variant="overline" color="text.secondary" sx={{ fontWeight: 700 }}>
               Card Themes
             </Typography>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>
               {totalWins} win{totalWins !== 1 ? 's' : ''} total
             </Typography>
+            {billingSupported && (
+              <Button size="small" variant="text" onClick={handleRestorePurchases} sx={{ fontSize: '0.65rem', color: 'text.secondary', py: 0 }}>
+                Restore purchases
+              </Button>
+            )}
           </Box>
           <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1 }}>
             {CARD_THEMES.map(t => {
-              const unlocked = totalWins >= t.requiredWins
+              const grandfathered = totalWins >= t.requiredWins  // legacy win-unlock still works
+              const purchased = purchasedThemes.includes(t.id)
+              const unlocked = !t.isPremium || grandfathered || purchased
               const selected = selectedThemeId === t.id
+              const isPurchasing = purchasing === t.id
+
               return (
                 <Tooltip
                   key={t.id}
-                  title={unlocked ? t.name : `Unlock at ${t.requiredWins} wins`}
+                  title={
+                    unlocked ? t.name
+                    : billingSupported ? `Buy to unlock`
+                    : `Available on Android`
+                  }
                   placement="top"
                 >
                   <Box
-                    onClick={() => unlocked && handleSelectTheme(t.id)}
+                    onClick={() => unlocked && !isPurchasing && handleSelectTheme(t.id)}
                     sx={{
                       borderRadius: 2,
                       border: '2px solid',
@@ -262,7 +311,7 @@ export default function SettingsPage({
                       alignItems: 'center',
                       gap: 0.5,
                       cursor: unlocked ? 'pointer' : 'default',
-                      opacity: unlocked ? 1 : 0.38,
+                      opacity: unlocked ? 1 : 0.5,
                       transition: 'border-color 0.15s, box-shadow 0.15s',
                       boxShadow: selected ? `0 0 0 1px ${t.accentColor}` : 'none',
                       background: selected
@@ -274,20 +323,33 @@ export default function SettingsPage({
                     }}
                   >
                     <Typography sx={{ fontSize: '1.5rem', lineHeight: 1 }}>
-                      {unlocked ? t.emoji : '🔒'}
+                      {t.emoji}
                     </Typography>
                     <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.68rem', textAlign: 'center', lineHeight: 1.2 }}>
                       {t.name}
                     </Typography>
-                    {t.requiredWins > 0 && (
-                      <Typography variant="caption" sx={{ fontSize: '0.6rem', color: unlocked ? t.accentColor : 'text.disabled' }}>
-                        {unlocked ? '✓ unlocked' : `${t.requiredWins} wins`}
-                      </Typography>
+                    {!t.isPremium && (
+                      <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'text.disabled' }}>free</Typography>
                     )}
-                    {t.requiredWins === 0 && (
-                      <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'text.disabled' }}>
-                        free
-                      </Typography>
+                    {t.isPremium && unlocked && (
+                      <Typography variant="caption" sx={{ fontSize: '0.6rem', color: t.accentColor }}>✓ owned</Typography>
+                    )}
+                    {t.isPremium && !unlocked && billingSupported && (
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        disabled={isPurchasing}
+                        onClick={e => { e.stopPropagation(); handleBuyTheme(t.skuId as ThemeSku, t.id) }}
+                        sx={{ fontSize: '0.6rem', py: 0.25, px: 0.75, mt: 0.25, minWidth: 'auto' }}
+                      >
+                        {isPurchasing ? '...' : 'Buy'}
+                      </Button>
+                    )}
+                    {t.isPremium && !unlocked && !billingSupported && (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
+                        <LockIcon sx={{ fontSize: '0.65rem', color: 'text.disabled' }} />
+                        <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'text.disabled' }}>Android</Typography>
+                      </Box>
                     )}
                   </Box>
                 </Tooltip>

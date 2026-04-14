@@ -9,6 +9,7 @@ import confetti from 'canvas-confetti'
 import { getWinningCells } from '../../firebase'
 import PostGameStats from './PostGameStats'
 import type { Room, Player, WinCondition } from '../../types'
+import type { CardTheme } from '../../themes'
 import AdBanner from '../AdBanner'
 
 const bounce = keyframes`
@@ -21,6 +22,7 @@ interface EndedViewProps {
   nickname: string
   players: Player[]
   isCreator: boolean
+  cardTheme?: CardTheme
   onReset: () => void
   onLeave: () => void
 }
@@ -64,13 +66,14 @@ function MiniBoard({ player }: { player: Player }) {
   )
 }
 
-export default function EndedView({ room, nickname, players, isCreator, onReset, onLeave }: EndedViewProps) {
+export default function EndedView({ room, nickname, players, isCreator, cardTheme, onReset, onLeave }: EndedViewProps) {
   const iWon = room.winner === nickname
 
   useEffect(() => {
     if (!iWon) return
-    confetti({ particleCount: 180, spread: 90, origin: { y: 0.65 } })
-    const t = setTimeout(() => confetti({ particleCount: 80, spread: 60, origin: { y: 0.55, x: 0.3 } }), 400)
+    const colors = cardTheme?.confettiColors ?? ['#fbbf24', '#f97316', '#3b82f6', '#10b981']
+    confetti({ particleCount: 180, spread: 90, origin: { y: 0.65 }, colors })
+    const t = setTimeout(() => confetti({ particleCount: 80, spread: 60, origin: { y: 0.55, x: 0.3 }, colors }), 400)
     return () => clearTimeout(t)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 

@@ -221,6 +221,7 @@ export default function GamePage({ roomCode, nickname, onLeave }: GamePageProps)
           nickname={nickname}
           players={players}
           isCreator={isCreator}
+          cardTheme={cardTheme}
           onReset={handleReset}
           onLeave={onLeave}
         />

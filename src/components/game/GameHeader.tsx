@@ -1,9 +1,7 @@
 import AppBar from '@mui/material/AppBar'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
-import Chip from '@mui/material/Chip'
 import IconButton from '@mui/material/IconButton'
-import Tooltip from '@mui/material/Tooltip'
 import Avatar from '@mui/material/Avatar'
 import Button from '@mui/material/Button'
 import Dialog from '@mui/material/Dialog'
@@ -11,12 +9,19 @@ import DialogTitle from '@mui/material/DialogTitle'
 import DialogContent from '@mui/material/DialogContent'
 import DialogContentText from '@mui/material/DialogContentText'
 import DialogActions from '@mui/material/DialogActions'
+import Menu from '@mui/material/Menu'
+import MenuItem from '@mui/material/MenuItem'
+import ListItemIcon from '@mui/material/ListItemIcon'
+import ListItemText from '@mui/material/ListItemText'
+import Divider from '@mui/material/Divider'
+import Box from '@mui/material/Box'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import CheckIcon from '@mui/icons-material/Check'
 import ShareIcon from '@mui/icons-material/Share'
 import VolumeUpIcon from '@mui/icons-material/VolumeUp'
 import VolumeOffIcon from '@mui/icons-material/VolumeOff'
 import ExitToAppIcon from '@mui/icons-material/ExitToApp'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { useTheme } from '@mui/material/styles'
 import { useState } from 'react'
 import { auth } from '../../firebase'
@@ -37,6 +42,7 @@ export default function GameHeader({ roomCode, nickname, copied, onCopyCode, onL
   const isDark = palette.mode === 'dark'
   const photoURL = auth.currentUser?.photoURL
   const [sound, setSound] = useState(isSoundEnabled)
+  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null)
   const [confirmOpen, setConfirmOpen] = useState(false)
 
   function toggleSound() {
@@ -60,6 +66,11 @@ export default function GameHeader({ roomCode, nickname, copied, onCopyCode, onL
     }
   }
 
+  function handleCopy() {
+    setMenuAnchor(null)
+    onCopyCode()
+  }
+
   return (
     <>
       <AppBar
@@ -73,54 +84,93 @@ export default function GameHeader({ roomCode, nickname, copied, onCopyCode, onL
           color: 'text.primary',
         }}
       >
-        <Toolbar sx={{ gap: 1.5 }}>
+        <Toolbar sx={{ gap: 1 }}>
           <Typography variant="subtitle1" sx={{ fontWeight: 800, letterSpacing: '-0.02em', flex: 1 }}>
             🎱 Meeting Bingo
           </Typography>
 
-          {photoURL ? (
-            <Tooltip title={nickname}>
-              <Avatar src={photoURL} sx={{ width: 28, height: 28 }} />
-            </Tooltip>
-          ) : (
-            <Typography variant="caption" color="text.secondary">
-              Playing as <strong>{nickname}</strong>
+          {/* Avatar + nickname */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+            {photoURL
+              ? <Avatar src={photoURL} sx={{ width: 26, height: 26 }} />
+              : <Avatar sx={{ width: 26, height: 26, fontSize: '0.7rem', background: 'linear-gradient(135deg,#3b82f6,#06b6d4)', fontWeight: 800 }}>
+                  {nickname[0]?.toUpperCase()}
+                </Avatar>
+            }
+            <Typography variant="caption" sx={{ fontWeight: 600, maxWidth: 90, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {nickname}
             </Typography>
-          )}
+          </Box>
 
-          <Chip
-            label={`${roomCode}${copied ? ' ✓' : ''}`}
-            onClick={onCopyCode}
-            icon={copied ? <CheckIcon fontSize="small" /> : <ContentCopyIcon fontSize="small" />}
+          {/* ⋮ menu */}
+          <IconButton
             size="small"
-            sx={{
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              letterSpacing: '0.15em',
-              background: 'rgba(59,130,246,0.15)',
-              border: '1px solid rgba(59,130,246,0.35)',
-              cursor: 'pointer',
-              '&:hover': { background: 'rgba(59,130,246,0.28)' },
-            }}
-          />
-          <Tooltip title={sound ? 'Mute sounds' : 'Unmute sounds'}>
-            <IconButton size="small" onClick={toggleSound} sx={{ color: 'text.secondary' }}>
-              {sound ? <VolumeUpIcon fontSize="small" /> : <VolumeOffIcon fontSize="small" />}
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Invite people">
-            <IconButton size="small" onClick={handleShare} sx={{ color: 'text.secondary' }}>
-              <ShareIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Leave room">
-            <IconButton size="small" onClick={() => setConfirmOpen(true)} sx={{ color: 'text.secondary' }}>
-              <ExitToAppIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
+            onClick={e => setMenuAnchor(e.currentTarget)}
+            sx={{ color: 'text.secondary' }}
+          >
+            <MoreVertIcon fontSize="small" />
+          </IconButton>
         </Toolbar>
       </AppBar>
 
+      {/* Dropdown menu */}
+      <Menu
+        anchorEl={menuAnchor}
+        open={Boolean(menuAnchor)}
+        onClose={() => setMenuAnchor(null)}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        slotProps={{ paper: { sx: { minWidth: 210 } } }}
+      >
+        {/* Room code row — fixed width, no layout shift */}
+        <MenuItem onClick={handleCopy} dense>
+          <ListItemIcon sx={{ minWidth: 32 }}>
+            <Box sx={{ width: 20, display: 'flex', justifyContent: 'center' }}>
+              {copied ? <CheckIcon fontSize="small" color="success" /> : <ContentCopyIcon fontSize="small" />}
+            </Box>
+          </ListItemIcon>
+          <ListItemText
+            primary={
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="body2">Copy room code</Typography>
+                <Typography
+                  variant="caption"
+                  sx={{ fontFamily: 'monospace', fontWeight: 700, letterSpacing: '0.12em',
+                    background: isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.1)',
+                    px: 0.75, borderRadius: 1 }}
+                >
+                  {roomCode}
+                </Typography>
+              </Box>
+            }
+          />
+        </MenuItem>
+
+        <MenuItem onClick={() => { setMenuAnchor(null); toggleSound() }} dense>
+          <ListItemIcon sx={{ minWidth: 32 }}>
+            {sound ? <VolumeUpIcon fontSize="small" /> : <VolumeOffIcon fontSize="small" />}
+          </ListItemIcon>
+          <ListItemText primary={sound ? 'Sound on' : 'Sound off'} />
+        </MenuItem>
+
+        <MenuItem onClick={() => { setMenuAnchor(null); handleShare() }} dense>
+          <ListItemIcon sx={{ minWidth: 32 }}>
+            <ShareIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary="Invite players" />
+        </MenuItem>
+
+        <Divider />
+
+        <MenuItem onClick={() => { setMenuAnchor(null); setConfirmOpen(true) }} dense sx={{ color: 'error.main' }}>
+          <ListItemIcon sx={{ minWidth: 32 }}>
+            <ExitToAppIcon fontSize="small" color="error" />
+          </ListItemIcon>
+          <ListItemText primary="Leave room" />
+        </MenuItem>
+      </Menu>
+
+      {/* Leave confirmation */}
       <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
         <DialogTitle>Leave room?</DialogTitle>
         <DialogContent>

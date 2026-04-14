@@ -454,3 +454,13 @@ export async function getUserTotalWins(nickname: string): Promise<number> {
   if (!snap.exists()) return 0
   return (snap.data().totalWins as number) ?? 0
 }
+
+export async function getPurchasedThemes(nickname: string): Promise<string[]> {
+  const snap = await getDoc(doc(db, 'users', nickname))
+  if (!snap.exists()) return []
+  return (snap.data().purchasedThemes as string[]) ?? []
+}
+
+export async function savePurchasedTheme(nickname: string, themeId: string): Promise<void> {
+  await setDoc(doc(db, 'users', nickname), { purchasedThemes: arrayUnion(themeId) }, { merge: true })
+}
