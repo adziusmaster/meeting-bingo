@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="80" fill="#0f172a"/>
+
+  <!-- 5x5 bingo grid: tile size 62px, gap 8px, start at x/y=85 -->
+  <!-- step = 70px -->
+
+  <!-- Row 0 -->
+  <rect x="85"  y="85"  width="62" height="62" rx="8" fill="#06b6d4"/> <!-- (0,0) diagonal -->
+  <rect x="155" y="85"  width="62" height="62" rx="8" fill="#1e293b"/>
+  <rect x="225" y="85"  width="62" height="62" rx="8" fill="#1e293b"/>
+  <rect x="295" y="85"  width="62" height="62" rx="8" fill="#1e293b"/>
+  <rect x="365" y="85"  width="62" height="62" rx="8" fill="#1e293b"/>
+
+  <!-- Row 1 -->
+  <rect x="85"  y="155" width="62" height="62" rx="8" fill="#1e293b"/>
+  <rect x="155" y="155" width="62" height="62" rx="8" fill="#06b6d4"/> <!-- (1,1) diagonal -->
+  <rect x="225" y="155" width="62" height="62" rx="8" fill="#1e293b"/>
+  <rect x="295" y="155" width="62" height="62" rx="8" fill="#1e293b"/>
+  <rect x="365" y="155" width="62" height="62" rx="8" fill="#1e293b"/>
+
+  <!-- Row 2 -->
+  <rect x="85"  y="225" width="62" height="62" rx="8" fill="#1e293b"/>
+  <rect x="155" y="225" width="62" height="62" rx="8" fill="#1e293b"/>
+  <rect x="225" y="225" width="62" height="62" rx="8" fill="#0ea5e9"/> <!-- (2,2) FREE center -->
+  <rect x="295" y="225" width="62" height="62" rx="8" fill="#1e293b"/>
+  <rect x="365" y="225" width="62" height="62" rx="8" fill="#1e293b"/>
+
+  <!-- Row 3 -->
+  <rect x="85"  y="295" width="62" height="62" rx="8" fill="#1e293b"/>
+  <rect x="155" y="295" width="62" height="62" rx="8" fill="#1e293b"/>
+  <rect x="225" y="295" width="62" height="62" rx="8" fill="#1e293b"/>
+  <rect x="295" y="295" width="62" height="62" rx="8" fill="#06b6d4"/> <!-- (3,3) diagonal -->
+  <rect x="365" y="295" width="62" height="62" rx="8" fill="#1e293b"/>
+
+  <!-- Row 4 -->
+  <rect x="85"  y="365" width="62" height="62" rx="8" fill="#1e293b"/>
+  <rect x="155" y="365" width="62" height="62" rx="8" fill="#1e293b"/>
+  <rect x="225" y="365" width="62" height="62" rx="8" fill="#1e293b"/>
+  <rect x="295" y="365" width="62" height="62" rx="8" fill="#1e293b"/>
+  <rect x="365" y="365" width="62" height="62" rx="8" fill="#06b6d4"/> <!-- (4,4) diagonal -->
+
+  <!-- Star in FREE center tile -->
+  <polygon
+    points="256,233 260,245 273,245 263,252 267,265 256,258 245,265 249,252 239,245 252,245"
+    fill="white" opacity="0.9"
+  />
+</svg>

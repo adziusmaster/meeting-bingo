@@ -1,0 +1,90 @@
+import Box from '@mui/material/Box'
+import Paper from '@mui/material/Paper'
+import CircularProgress from '@mui/material/CircularProgress'
+import Typography from '@mui/material/Typography'
+import Button from '@mui/material/Button'
+import LockIcon from '@mui/icons-material/Lock'
+import PlayersPanel from './PlayersPanel'
+import WordEditor from './WordEditor'
+import type { Room, Player } from '../../types'
+
+interface WaitingViewProps {
+  room: Room
+  players: Player[]
+  nickname: string
+  isCreator: boolean
+  wordInput: string
+  wordError: string
+  onWordChange: (v: string) => void
+  onStart: () => void
+}
+
+export default function WaitingView({
+  room, players, nickname, isCreator,
+  wordInput, wordError, onWordChange, onStart,
+}: WaitingViewProps) {
+  const wordsLocked = room.wordsLocked ?? false
+
+  return (
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, p: 1.5, flex: 1 }}>
+      <PlayersPanel
+        players={players}
+        nickname={nickname}
+        createdBy={room.createdBy}
+        roomCode={room.code}
+      />
+
+      {isCreator && !wordsLocked && (
+        <WordEditor
+          wordInput={wordInput}
+          wordError={wordError}
+          onChange={onWordChange}
+          onStart={onStart}
+        />
+      )}
+
+      {isCreator && wordsLocked && (
+        <Paper sx={{ flex: 2, minWidth: 300, p: 2.5, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <LockIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
+            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+              Word list locked
+            </Typography>
+          </Box>
+          <Typography variant="caption" color="text.secondary">
+            The word list is fixed for this room. {room.words.length} words loaded.
+          </Typography>
+          <Box
+            sx={{
+              flex: 1, overflowY: 'auto', maxHeight: 280,
+              border: '1px solid rgba(255,255,255,0.1)', borderRadius: 1, p: 1.5,
+              fontSize: '0.87rem', lineHeight: 1.7, color: 'text.secondary',
+              whiteSpace: 'pre-wrap',
+            }}
+          >
+            {room.words.join('\n')}
+          </Box>
+          <Button variant="contained" onClick={onStart}>
+            Start game →
+          </Button>
+        </Paper>
+      )}
+
+      {!isCreator && (
+        <Paper
+          sx={{
+            flex: 2, minWidth: 280, p: 3,
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            gap: 2, textAlign: 'center',
+          }}
+        >
+          <CircularProgress />
+          <Typography color="text.secondary">
+            Waiting for <strong>{room.createdBy}</strong> to start the game…
+          </Typography>
+        </Paper>
+      )}
+    </Box>
+  )
+}

@@ -1,0 +1,162 @@
+import { initializeApp } from 'firebase/app'
+import {
+  getFirestore,
+  doc,
+  collection,
+  setDoc,
+  getDoc,
+  getDocs,
+  updateDoc,
+  onSnapshot,
+  serverTimestamp,
+} from 'firebase/firestore'
+import type { Room, Player } from './types'
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCC3bCK8naG6NwYFuf5gyzPhMB2RnQePzE",
+  authDomain: "meeting-bingo-a52cc.firebaseapp.com",
+  projectId: "meeting-bingo-a52cc",
+  storageBucket: "meeting-bingo-a52cc.firebasestorage.app",
+  messagingSenderId: "908791038068",
+  appId: "1:908791038068:web:755f46881b04a505615121",
+  measurementId: "G-L6MTWEF0CE"
+}
+
+const app = initializeApp(firebaseConfig)
+export const db = getFirestore(app)
+
+// ── Helpers ────────────────────────────────────────────────────
+
+export function generateRoomCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+  return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
+}
+
+function shuffle<T>(array: T[]): T[] {
+  const arr = [...array]
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[arr[i], arr[j]] = [arr[j], arr[i]]
+  }
+  return arr
+}
+
+export function generateCard(wordPool: string[]): string[] {
+  const words = shuffle(wordPool.filter(w => w.trim() !== '')).slice(0, 24)
+  words.splice(12, 0, 'FREE')
+  return words
+}
+
+export function checkWin(marked: boolean[]): boolean {
+  if (!marked || marked.length !== 25) return false
+  const lines = [
+    [0, 1, 2, 3, 4], [5, 6, 7, 8, 9], [10, 11, 12, 13, 14],
+    [15, 16, 17, 18, 19], [20, 21, 22, 23, 24],
+    [0, 5, 10, 15, 20], [1, 6, 11, 16, 21], [2, 7, 12, 17, 22],
+    [3, 8, 13, 18, 23], [4, 9, 14, 19, 24],
+    [0, 6, 12, 18, 24], [4, 8, 12, 16, 20],
+  ]
+  return lines.some(line => line.every(i => marked[i]))
+}
+
+export function getWinningCells(marked: boolean[]): Set<number> {
+  const cells = new Set<number>()
+  if (!marked || marked.length !== 25) return cells
+  const lines = [
+    [0, 1, 2, 3, 4], [5, 6, 7, 8, 9], [10, 11, 12, 13, 14],
+    [15, 16, 17, 18, 19], [20, 21, 22, 23, 24],
+    [0, 5, 10, 15, 20], [1, 6, 11, 16, 21], [2, 7, 12, 17, 22],
+    [3, 8, 13, 18, 23], [4, 9, 14, 19, 24],
+    [0, 6, 12, 18, 24], [4, 8, 12, 16, 20],
+  ]
+  lines.forEach(line => {
+    if (line.every(i => marked[i])) line.forEach(i => cells.add(i))
+  })
+  return cells
+}
+
+// ── Firestore operations ────────────────────────────────────────
+
+export async function createRoom(nickname: string, words: string[]): Promise<string> {
+  const code = generateRoomCode()
+  await setDoc(doc(db, 'rooms', code), {
+    code, words, status: 'waiting', createdBy: nickname, winner: null, wordsLocked: false,
+    createdAt: serverTimestamp(),
+  })
+  await setDoc(doc(db, 'rooms', code, 'players', nickname), {
+    nickname, card: [], marked: [], hasWon: false, joinedAt: serverTimestamp(),
+  })
+  return code
+}
+
+export async function joinRoom(roomCode: string, nickname: string): Promise<string> {
+  const code = roomCode.toUpperCase().trim()
+  const roomSnap = await getDoc(doc(db, 'rooms', code))
+  if (!roomSnap.exists()) throw new Error('Room not found. Check the code and try again.')
+  if ((roomSnap.data() as Room).status === 'ended') throw new Error('That game has already ended.')
+
+  const playerSnap = await getDoc(doc(db, 'rooms', code, 'players', nickname))
+  if (!playerSnap.exists()) {
+    await setDoc(doc(db, 'rooms', code, 'players', nickname), {
+      nickname, card: [], marked: [], hasWon: false, joinedAt: serverTimestamp(),
+    })
+  }
+  return code
+}
+
+export async function updateWords(roomCode: string, words: string[]): Promise<void> {
+  await updateDoc(doc(db, 'rooms', roomCode), { words })
+}
+
+export async function startGame(roomCode: string): Promise<void> {
+  await updateDoc(doc(db, 'rooms', roomCode), { status: 'playing' })
+}
+
+export async function initPlayerCard(roomCode: string, nickname: string, wordPool: string[]): Promise<void> {
+  const snap = await getDoc(doc(db, 'rooms', roomCode, 'players', nickname))
+  if ((snap.data() as Player | undefined)?.card?.length === 25) return
+  const card = generateCard(wordPool)
+  const marked = Array<boolean>(25).fill(false)
+  marked[12] = true
+  await updateDoc(doc(db, 'rooms', roomCode, 'players', nickname), { card, marked })
+}
+
+export async function markTile(roomCode: string, nickname: string, marked: boolean[]): Promise<void> {
+  await updateDoc(doc(db, 'rooms', roomCode, 'players', nickname), { marked })
+}
+
+export async function announceWinner(roomCode: string, nickname: string): Promise<void> {
+  await Promise.all([
+    updateDoc(doc(db, 'rooms', roomCode), { status: 'ended', winner: nickname }),
+    updateDoc(doc(db, 'rooms', roomCode, 'players', nickname), { hasWon: true }),
+  ])
+}
+
+export async function resetPlayerCards(roomCode: string): Promise<void> {
+  const snap = await getDocs(collection(db, 'rooms', roomCode, 'players'))
+  await Promise.all(
+    snap.docs.map(d => updateDoc(d.ref, { card: [], marked: [], hasWon: false }))
+  )
+}
+
+export async function resetGame(roomCode: string): Promise<void> {
+  await updateDoc(doc(db, 'rooms', roomCode), { status: 'waiting', winner: null, wordsLocked: true })
+}
+
+export function subscribeToRoom(roomCode: string, cb: (room: Room) => void): () => void {
+  return onSnapshot(doc(db, 'rooms', roomCode), snap => {
+    if (snap.exists()) cb(snap.data() as Room)
+  })
+}
+
+export function subscribeToPlayer(roomCode: string, nickname: string, cb: (player: Player) => void): () => void {
+  return onSnapshot(doc(db, 'rooms', roomCode, 'players', nickname), snap => {
+    if (snap.exists()) cb(snap.data() as Player)
+  })
+}
+
+export function subscribeToPlayers(roomCode: string, cb: (players: Player[]) => void): () => void {
+  return onSnapshot(collection(db, 'rooms', roomCode, 'players'), snap => {
+    cb(snap.docs.map(d => d.data() as Player))
+  })
+}
