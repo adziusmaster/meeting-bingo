@@ -15,7 +15,9 @@ interface LobbyPageProps {
 }
 
 export default function LobbyPage({ nickname, onJoin }: LobbyPageProps) {
-  const [joinCode, setJoinCode] = useState('')
+  const [joinCode, setJoinCode] = useState(
+    () => new URLSearchParams(window.location.search).get('room') ?? ''
+  )
   const [error, setError] = useState('')
   const [creating, setCreating] = useState(false)
   const [joining, setJoining] = useState(false)
