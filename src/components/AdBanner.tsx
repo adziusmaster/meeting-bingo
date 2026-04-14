@@ -3,7 +3,7 @@ import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 
 const ADSENSE_CLIENT = 'ca-pub-6700431049727613'
-const ADSENSE_SLOT   = '8840499341'
+const ADSENSE_SLOT   = '2274482181'
 
 declare global {
   interface Window { adsbygoogle: unknown[] }
