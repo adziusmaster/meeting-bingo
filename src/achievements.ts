@@ -11,7 +11,6 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { id: 'veteran',       name: 'Veteran',        icon: '\u{1F396}\uFE0F', description: 'Win 10 games total' },
   { id: 'legend',        name: 'Legend',          icon: '\u{1F3C5}', description: 'Win 50 games total' },
   { id: 'underdog',      name: 'Underdog',       icon: '\u{1F415}', description: 'Win when someone else had more tiles marked' },
-  { id: 'called_winner', name: 'By the Book',    icon: '\u{1F4D6}', description: 'Win a game in called mode' },
   { id: 'hat_trick',     name: 'Hat Trick',      icon: '\u{1F3A9}', description: 'Win 3 times in one day' },
   { id: 'blackout',      name: 'Blackout',       icon: '\u{1F311}', description: 'Win with a Blackout win condition' },
 ]

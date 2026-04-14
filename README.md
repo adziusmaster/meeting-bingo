@@ -10,7 +10,7 @@ Real-time multiplayer bingo for your next meeting. Mark off buzzwords as you hea
 ## Features
 
 - **Real-time multiplayer** — join a room with a 6-character code, everyone gets a unique shuffled card
-- **Two game modes** — Classic (self-mark) or Called (host calls words for everyone)
+- **One game mode** — Classic (self-mark): players mark tiles themselves when they hear a word
 - **Win conditions** — Line, Corners, X Pattern, or Full Blackout
 - **Room chat** — send messages to everyone in your room during the game
 - **Emoji reactions** — 🔥😂😱👏💀🎉 float across everyone's screen in real time

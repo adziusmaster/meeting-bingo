@@ -12,7 +12,7 @@ import SettingsIcon from '@mui/icons-material/Settings'
 import { createRoom, joinRoom } from '../firebase'
 import { DEFAULT_WORDS } from '../constants'
 import AdBanner from '../components/AdBanner'
-import type { GameMode, WinCondition } from '../types'
+import type { WinCondition } from '../types'
 
 interface LobbyPageProps {
   nickname: string
@@ -35,14 +35,13 @@ export default function LobbyPage({ nickname, onJoin, onSettings }: LobbyPagePro
   const [creating, setCreating] = useState(false)
   const [joining, setJoining] = useState(false)
   const [showCreateSettings, setShowCreateSettings] = useState(false)
-  const [gameMode, setGameMode] = useState<GameMode>('classic')
   const [winCondition, setWinCondition] = useState<WinCondition>('line')
 
   async function handleCreate() {
     setCreating(true)
     setError('')
     try {
-      const code = await createRoom(nickname, DEFAULT_WORDS, gameMode, winCondition)
+      const code = await createRoom(nickname, DEFAULT_WORDS, winCondition)
       onJoin(code)
     } catch (e) {
       setError((e as Error).message)
@@ -95,37 +94,6 @@ export default function LobbyPage({ nickname, onJoin, onSettings }: LobbyPagePro
           </Button>
         ) : (
           <Paper variant="outlined" sx={{ p: 2, mb: 0.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {/* Game Mode */}
-            <Box>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
-                Game Mode
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <Button
-                  variant={gameMode === 'classic' ? 'contained' : 'outlined'}
-                  size="small"
-                  onClick={() => setGameMode('classic')}
-                  sx={{ flex: 1, flexDirection: 'column', py: 1, gap: 0.25 }}
-                >
-                  <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.82rem' }}>Classic</Typography>
-                  <Typography variant="caption" sx={{ fontSize: '0.6rem', opacity: 0.7, lineHeight: 1.2 }}>
-                    Mark tiles yourself as buzzwords are said
-                  </Typography>
-                </Button>
-                <Button
-                  variant={gameMode === 'called' ? 'contained' : 'outlined'}
-                  size="small"
-                  onClick={() => setGameMode('called')}
-                  sx={{ flex: 1, flexDirection: 'column', py: 1, gap: 0.25 }}
-                >
-                  <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.82rem' }}>Called</Typography>
-                  <Typography variant="caption" sx={{ fontSize: '0.6rem', opacity: 0.7, lineHeight: 1.2 }}>
-                    Host calls words — boards update automatically
-                  </Typography>
-                </Button>
-              </Box>
-            </Box>
-
             {/* Win Condition */}
             <Box>
               <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>

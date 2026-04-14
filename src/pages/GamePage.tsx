@@ -7,7 +7,7 @@ import {
   startGame, updateWords, initPlayerCard,
   markTile, announceWinner, getOneAwayCells,
   resetGame, resetPlayerCards, sendReaction, subscribeToReactions,
-  checkWinCondition, getWinConditionCells, computeCalledMarked,
+  checkWinCondition, getWinConditionCells,
   subscribeToChatMessages, sendChatMessage,
   getUserAchievements, unlockAchievement, getPlayerWins, getHatTrickCount,
   subscribeToUserAchievements,
@@ -22,7 +22,7 @@ import WaitingView from '../components/game/WaitingView'
 import PlayingView from '../components/game/PlayingView'
 import EndedView from '../components/game/EndedView'
 import AchievementToast from '../components/game/AchievementToast'
-import type { Room, Player, Reaction, ChatMessage, GameMode, WinCondition } from '../types'
+import type { Room, Player, Reaction, ChatMessage, WinCondition } from '../types'
 import { CARD_THEMES } from '../themes'
 import type { CardTheme } from '../themes'
 
@@ -104,16 +104,11 @@ export default function GamePage({ roomCode, nickname, onLeave }: GamePageProps)
     initPlayerCard(roomCode, nickname, room.words)
   }, [room?.status, player?.card?.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Determine computed marked and win condition
-  const gameMode: GameMode = room?.gameMode ?? 'classic'
+  // Determine win condition
   const winCondition: WinCondition = room?.winCondition ?? 'line'
-  const isCalledMode = gameMode === 'called'
+  const computedMarked = player?.marked ?? []
 
-  const computedMarked = (isCalledMode && player?.card?.length === 25)
-    ? computeCalledMarked(player.card, room?.calledWords ?? [])
-    : player?.marked ?? []
-
-  // Check for win after every tile toggle / calledWords change
+  // Check for win after every tile toggle
   useEffect(() => {
     if (room?.status !== 'playing') return
     if (!computedMarked || computedMarked.length !== 25) return
@@ -126,11 +121,11 @@ export default function GamePage({ roomCode, nickname, onLeave }: GamePageProps)
 
       // Check achievements
       const markedCount = computedMarked.filter(Boolean).length
-      checkAchievementsAsync(markedCount, gameMode, winCondition)
+      checkAchievementsAsync(markedCount, winCondition)
     }
   }, [computedMarked, room?.status, room?.winner]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function checkAchievementsAsync(markedCount: number, gm: GameMode, wc: WinCondition) {
+  async function checkAchievementsAsync(markedCount: number, wc: WinCondition) {
     try {
       const existing = await getUserAchievements(nickname)
       const unlock = (id: string) => { if (!existing.includes(id)) unlockAchievement(nickname, id) }
@@ -141,7 +136,6 @@ export default function GamePage({ roomCode, nickname, onLeave }: GamePageProps)
       if (markedCount <= 8) unlock('quick_draw')
       if (totalWins >= 10) unlock('veteran')
       if (totalWins >= 50) unlock('legend')
-      if (gm === 'called') unlock('called_winner')
       if (wc === 'blackout') unlock('blackout')
 
       // underdog: win when another player had more tiles marked
@@ -169,7 +163,6 @@ export default function GamePage({ roomCode, nickname, onLeave }: GamePageProps)
   }
 
   async function handleTile(index: number) {
-    if (isCalledMode) return // In called mode, tiles are read-only
     if (!player?.marked || player.marked.length !== 25) return
     if (player.card[index] === 'FREE') return
     if (room?.status !== 'playing' || room?.winner) return

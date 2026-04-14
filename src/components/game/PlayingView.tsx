@@ -5,7 +5,6 @@ import BingoBoard from './BingoBoard'
 import Scoreboard from './Scoreboard'
 import EmojiReactions from './EmojiReactions'
 import ChatPanel from './ChatPanel'
-import CalledWordsPanel from './CalledWordsPanel'
 import type { Room, Player, Reaction, ChatMessage } from '../../types'
 import type { CardTheme } from '../../themes'
 
@@ -32,7 +31,6 @@ export default function PlayingView({
   messages, onSendMessage, computedMarked, cardTheme,
 }: PlayingViewProps) {
   const isHost = room.createdBy === nickname
-  const isCalledMode = (room.gameMode ?? 'classic') === 'called'
   const displayMarked = computedMarked ?? player.marked
 
   return (
@@ -71,8 +69,6 @@ export default function PlayingView({
             oneAwayCells={oneAwayCells}
             disabled={!!room.winner}
             onTileClick={onTileClick}
-            gameMode={room.gameMode}
-            calledWords={room.calledWords}
             theme={cardTheme}
           />
 
@@ -104,14 +100,6 @@ export default function PlayingView({
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           <Scoreboard players={players} nickname={nickname} />
-
-          {isHost && isCalledMode && room.status === 'playing' && (
-            <CalledWordsPanel
-              roomCode={room.code}
-              words={room.words}
-              calledWords={room.calledWords ?? []}
-            />
-          )}
 
           <ChatPanel
             roomCode={room.code}

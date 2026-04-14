@@ -1,4 +1,4 @@
-export type GameMode = 'classic' | 'called'
+export type GameMode = 'classic'
 export type WinCondition = 'line' | 'corners' | 'x_pattern' | 'blackout'
 
 export interface Room {

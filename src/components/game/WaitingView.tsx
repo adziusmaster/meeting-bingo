@@ -34,9 +34,7 @@ export default function WaitingView({
   wordInput, wordError, onWordChange, onStart,
 }: WaitingViewProps) {
   const wordsLocked = room.wordsLocked ?? false
-  const gameMode = room.gameMode ?? 'classic'
   const winCondition = room.winCondition ?? 'line'
-  const modeLabel = gameMode === 'called' ? 'Called mode' : 'Classic mode'
   const condLabel = WIN_CONDITION_LABELS[winCondition] ?? 'Line'
 
   return (
@@ -108,7 +106,7 @@ export default function WaitingView({
       {/* Game mode info pill */}
       <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', mt: 0.5 }}>
         <Chip
-          label={`${modeLabel} \u00B7 ${condLabel} win`}
+          label={`${condLabel} win`}
           size="small"
           variant="outlined"
           sx={{ fontSize: '0.72rem', fontWeight: 600 }}

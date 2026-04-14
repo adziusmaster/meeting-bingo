@@ -185,19 +185,6 @@ export function getWinConditionCells(marked: boolean[], condition: WinCondition)
   return cells
 }
 
-export function computeCalledMarked(card: string[], calledWords: string[]): boolean[] {
-  const calledSet = new Set(calledWords.map(w => w.toLowerCase()))
-  return card.map(word => word === 'FREE' || calledSet.has(word.toLowerCase()))
-}
-
-export async function callWord(roomCode: string, word: string): Promise<void> {
-  await updateDoc(doc(db, 'rooms', roomCode), { calledWords: arrayUnion(word) })
-}
-
-export async function uncallWord(roomCode: string, word: string): Promise<void> {
-  await updateDoc(doc(db, 'rooms', roomCode), { calledWords: arrayRemove(word) })
-}
-
 // ── Nick identity ───────────────────────────────────────────────
 
 // Claim a nickname for a Google UID. Writes to two places:
@@ -260,13 +247,12 @@ export function subscribeToRecentLeaderboard(
 export async function createRoom(
   nickname: string,
   words: string[],
-  gameMode: GameMode = 'classic',
   winCondition: WinCondition = 'line',
 ): Promise<string> {
   const code = generateRoomCode()
   await setDoc(doc(db, 'rooms', code), {
     code, words, status: 'waiting', createdBy: nickname, winner: null, wordsLocked: false,
-    gameMode, winCondition, calledWords: [],
+    gameMode: 'classic', winCondition,
     createdAt: serverTimestamp(),
   })
   await setDoc(doc(db, 'rooms', code, 'players', nickname), {

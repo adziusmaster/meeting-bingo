@@ -3,7 +3,6 @@ import ButtonBase from '@mui/material/ButtonBase'
 import Typography from '@mui/material/Typography'
 import { useTheme } from '@mui/material/styles'
 import { keyframes } from '@emotion/react'
-import type { GameMode } from '../../types'
 import type { CardTheme } from '../../themes'
 import { CARD_THEMES } from '../../themes'
 
@@ -21,8 +20,6 @@ interface BingoBoardProps {
   oneAwayCells: Set<number>
   disabled: boolean
   onTileClick: (index: number) => void
-  calledWords?: string[]
-  gameMode?: GameMode
   theme?: CardTheme
 }
 
@@ -90,13 +87,11 @@ function tileStyle(
 }
 
 export default function BingoBoard({
-  card, marked, winCells, oneAwayCells, disabled, onTileClick,
-  calledWords: _calledWords, gameMode, theme: cardTheme,
+  card, marked, winCells, oneAwayCells, disabled, onTileClick, theme: cardTheme,
 }: BingoBoardProps) {
   const muiTheme = useTheme()
   const isDark = muiTheme.palette.mode === 'dark'
   const t = cardTheme ?? CARD_THEMES[0]
-  const isCalledMode = gameMode === 'called'
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -131,7 +126,7 @@ export default function BingoBoard({
             <ButtonBase
               key={i}
               onClick={() => onTileClick(i)}
-              disabled={isFree || disabled || isCalledMode}
+              disabled={isFree || disabled}
               sx={{
                 width: 'clamp(62px, 14vw, 96px)',
                 height: 'clamp(62px, 14vw, 96px)',
