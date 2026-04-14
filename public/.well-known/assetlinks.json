@@ -3,6 +3,6 @@
       "target": {
         "namespace": "android_app",
         "package_name": "com.adziusmaster.meetingbingo",
-        "sha256_cert_fingerprints": ["F3:A3:D5:20:7A:B7:2C:C5:22:59:DA:68:82:28:35:47:A5:45:81:1C:12:50:77:B3:62:C8:86:0E:46:48:11:01"]
+        "sha256_cert_fingerprints": ["CA:4F:B2:81:AF:2D:E6:A9:63:CD:98:30:B7:29:13:B6:7D:EB:1A:8E:1E:B6:44:7A:D5:2E:21:EF:BF:D7:15:ED"]
       }
     }]
