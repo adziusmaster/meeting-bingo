@@ -4,7 +4,7 @@ import CircularProgress from '@mui/material/CircularProgress'
 import LoginPage from './pages/LoginPage'
 import LobbyPage from './pages/LobbyPage'
 import GamePage from './pages/GamePage'
-import { db } from './firebase'
+import { db, handleRedirectResult } from './firebase'
 import { doc, getDoc } from 'firebase/firestore'
 import type { Room } from './types'
 
@@ -15,6 +15,11 @@ export default function App() {
   const [nickname, setNickname] = useState('')
   const [roomCode, setRoomCode] = useState('')
   const [resuming, setResuming] = useState(true)
+
+  useEffect(() => {
+    // Complete any pending Google redirect sign-in (needed for TWA / Android)
+    handleRedirectResult().catch(() => {})
+  }, [])
 
   useEffect(() => {
     const savedNick = sessionStorage.getItem('bingo_nick')

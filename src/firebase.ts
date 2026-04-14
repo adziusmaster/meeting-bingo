@@ -17,6 +17,8 @@ import {
 import {
   getAuth,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   type User,
 } from 'firebase/auth'
@@ -40,7 +42,22 @@ export type { User }
 const googleProvider = new GoogleAuthProvider()
 
 export async function signInWithGoogle(): Promise<void> {
-  await signInWithPopup(auth, googleProvider)
+  try {
+    await signInWithPopup(auth, googleProvider)
+  } catch (err: unknown) {
+    // Popups are blocked in TWA (Android Play Store app) — fall back to redirect
+    const code = (err as { code?: string }).code
+    if (code === 'auth/popup-blocked' || code === 'auth/cancelled-popup-request') {
+      await signInWithRedirect(auth, googleProvider)
+    } else {
+      throw err
+    }
+  }
+}
+
+// Call once on app init to complete any pending redirect sign-in
+export async function handleRedirectResult(): Promise<void> {
+  await getRedirectResult(auth)
 }
 
 // ── Helpers ────────────────────────────────────────────────────
