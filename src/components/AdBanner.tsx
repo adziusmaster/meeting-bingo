@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 
-const ADSENSE_CLIENT = 'ca-pub-1727174985536828'
+const ADSENSE_CLIENT = 'ca-pub-6700431049727613'
 const ADSENSE_SLOT   = '8840499341'
 
 declare global {
