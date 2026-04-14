@@ -5,6 +5,7 @@ import Button from '@mui/material/Button'
 import CircularProgress from '@mui/material/CircularProgress'
 import { keyframes } from '@emotion/react'
 import type { Room } from '../../types'
+import AdBanner from '../AdBanner'
 
 const bounce = keyframes`
   from { transform: translateY(0); }
@@ -69,6 +70,8 @@ export default function EndedView({ room, nickname, isCreator, onReset, onLeave 
           )}
           <Button variant="outlined" onClick={onLeave}>Leave game</Button>
         </Box>
+
+        <AdBanner />
       </Paper>
     </Box>
   )
