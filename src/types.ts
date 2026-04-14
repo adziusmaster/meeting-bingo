@@ -13,3 +13,8 @@ export interface Player {
   marked: boolean[]
   hasWon: boolean
 }
+
+export interface UserProfile {
+  nickname: string
+  lastSeen: { toDate(): Date }
+}

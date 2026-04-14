@@ -6,6 +6,7 @@ import Button from '@mui/material/Button'
 import LockIcon from '@mui/icons-material/Lock'
 import PlayersPanel from './PlayersPanel'
 import WordEditor from './WordEditor'
+import LeaderboardPanel from './LeaderboardPanel'
 import type { Room, Player } from '../../types'
 
 interface WaitingViewProps {
@@ -33,6 +34,8 @@ export default function WaitingView({
         createdBy={room.createdBy}
         roomCode={room.code}
       />
+
+      <LeaderboardPanel />
 
       {isCreator && !wordsLocked && (
         <WordEditor

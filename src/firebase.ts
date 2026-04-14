@@ -6,10 +6,20 @@ import {
   setDoc,
   getDoc,
   getDocs,
+  addDoc,
   updateDoc,
   onSnapshot,
   serverTimestamp,
+  query,
+  where,
+  orderBy,
 } from 'firebase/firestore'
+import {
+  getAuth,
+  signInWithPopup,
+  GoogleAuthProvider,
+  type User,
+} from 'firebase/auth'
 import type { Room, Player } from './types'
 
 const firebaseConfig = {
@@ -24,6 +34,14 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig)
 export const db = getFirestore(app)
+export const auth = getAuth(app)
+export type { User }
+
+const googleProvider = new GoogleAuthProvider()
+
+export async function signInWithGoogle(): Promise<void> {
+  await signInWithPopup(auth, googleProvider)
+}
 
 // ── Helpers ────────────────────────────────────────────────────
 
@@ -75,7 +93,64 @@ export function getWinningCells(marked: boolean[]): Set<number> {
   return cells
 }
 
-// ── Firestore operations ────────────────────────────────────────
+// ── Nick identity ───────────────────────────────────────────────
+
+// Claim a nickname for a Google UID. Writes to two places:
+//   users/{nickname}  — for nick-uniqueness checks and lastSeen
+//   userNicks/{uid}   — for fast "what is my nick?" lookup by UID
+export async function claimNick(nickname: string, uid: string): Promise<void> {
+  await Promise.all([
+    setDoc(doc(db, 'users', nickname), { nickname, uid, lastSeen: serverTimestamp() }, { merge: true }),
+    setDoc(doc(db, 'userNicks', uid), { nickname }),
+  ])
+}
+
+// Returns the nickname claimed by this Google UID, or null if none yet.
+export async function getNickForUser(uid: string): Promise<string | null> {
+  const snap = await getDoc(doc(db, 'userNicks', uid))
+  return snap.exists() ? (snap.data().nickname as string) : null
+}
+
+// Returns true if another Google account already owns this nickname.
+export async function checkNickTaken(nickname: string, currentUid: string): Promise<boolean> {
+  const snap = await getDoc(doc(db, 'users', nickname))
+  if (!snap.exists()) return false
+  const uid = snap.data().uid as string | undefined
+  if (!uid) return false        // legacy entry before auth — not enforced
+  return uid !== currentUid
+}
+
+// ── Win tracking ────────────────────────────────────────────────
+
+const LEADERBOARD_WINDOW_MS = 8 * 60 * 60 * 1000
+
+export async function getPlayerWins(nickname: string): Promise<number> {
+  const snap = await getDocs(query(collection(db, 'wins'), where('nickname', '==', nickname)))
+  return snap.size
+}
+
+export function subscribeToRecentLeaderboard(
+  cb: (entries: { nickname: string; wins: number }[]) => void
+): () => void {
+  const since = new Date(Date.now() - LEADERBOARD_WINDOW_MS)
+  return onSnapshot(
+    query(collection(db, 'wins'), where('wonAt', '>=', since), orderBy('wonAt', 'desc')),
+    snap => {
+      const counts: Record<string, number> = {}
+      snap.docs.forEach(d => {
+        const nick = d.data().nickname as string
+        counts[nick] = (counts[nick] ?? 0) + 1
+      })
+      cb(
+        Object.entries(counts)
+          .map(([nickname, wins]) => ({ nickname, wins }))
+          .sort((a, b) => b.wins - a.wins)
+      )
+    }
+  )
+}
+
+// ── Firestore game operations ───────────────────────────────────
 
 export async function createRoom(nickname: string, words: string[]): Promise<string> {
   const code = generateRoomCode()
@@ -129,6 +204,7 @@ export async function announceWinner(roomCode: string, nickname: string): Promis
   await Promise.all([
     updateDoc(doc(db, 'rooms', roomCode), { status: 'ended', winner: nickname }),
     updateDoc(doc(db, 'rooms', roomCode, 'players', nickname), { hasWon: true }),
+    addDoc(collection(db, 'wins'), { nickname, roomCode, wonAt: serverTimestamp() }),
   ])
 }
 

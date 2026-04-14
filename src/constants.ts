@@ -1,3 +1,14 @@
+export const NICK_SUGGESTIONS: string[] = [
+  'AgileAndrea', 'AsyncAlex', 'BlockerBrendan', 'BandwidthBob',
+  'CircleBackCarla', 'DeepDiveDave', 'DeliverableDiana', 'DisruptiveDan',
+  'EpicEmma', 'FunnelFrank', 'GrowthGary', 'HolisticHannah',
+  'IterativeIvan', 'KanbanKate', 'LeverageLeo', 'MetricsMike',
+  'NorthStarNick', 'OKRoliver', 'PivotPaula', 'QuickWinQuinn',
+  'RetroRita', 'ScrumSam', 'StakeholderSue', 'TechDebtTom',
+  'UpskilledUma', 'VelocityVictor', 'WaterfallWendy', 'CrossFuncXander',
+  'YOLOYolanda', 'ZeroDefectZach',
+]
+
 export const DEFAULT_WORDS: string[] = [
   "synergy", "alignment", "pivot", "agile", "sprint", 
   "blocker", "bandwidth", "offline", "circle back", "deep dive",
