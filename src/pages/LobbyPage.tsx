@@ -7,6 +7,7 @@ import Button from '@mui/material/Button'
 import Divider from '@mui/material/Divider'
 import { createRoom, joinRoom } from '../firebase'
 import { DEFAULT_WORDS } from '../constants'
+import AdBanner from '../components/AdBanner'
 
 interface LobbyPageProps {
   nickname: string
@@ -101,6 +102,8 @@ export default function LobbyPage({ nickname, onJoin }: LobbyPageProps) {
             {error}
           </Typography>
         )}
+
+        <AdBanner format="rectangle" />
       </Paper>
     </Box>
   )

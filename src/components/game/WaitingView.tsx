@@ -7,6 +7,7 @@ import LockIcon from '@mui/icons-material/Lock'
 import PlayersPanel from './PlayersPanel'
 import WordEditor from './WordEditor'
 import LeaderboardPanel from './LeaderboardPanel'
+import AdBanner from '../AdBanner'
 import type { Room, Player } from '../../types'
 
 interface WaitingViewProps {
@@ -86,6 +87,7 @@ export default function WaitingView({
           <Typography color="text.secondary">
             Waiting for <strong>{room.createdBy}</strong> to start the game…
           </Typography>
+          <AdBanner format="rectangle" />
         </Paper>
       )}
     </Box>
