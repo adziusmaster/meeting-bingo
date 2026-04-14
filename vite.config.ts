@@ -69,8 +69,6 @@ export default defineConfig({
             label: 'Meeting Bingo — lobby and game side by side',
           },
         ],
-        // Get this code from Play Console → Content Rating, or https://www.globalratings.com
-        iarc_rating_id: 'YOUR_IARC_CODE_HERE',
         prefer_related_applications: false,
         related_applications: [
           {
