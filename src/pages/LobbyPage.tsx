@@ -5,6 +5,9 @@ import Typography from '@mui/material/Typography'
 import TextField from '@mui/material/TextField'
 import Button from '@mui/material/Button'
 import Divider from '@mui/material/Divider'
+import IconButton from '@mui/material/IconButton'
+import Tooltip from '@mui/material/Tooltip'
+import SettingsIcon from '@mui/icons-material/Settings'
 import { createRoom, joinRoom } from '../firebase'
 import { DEFAULT_WORDS } from '../constants'
 import AdBanner from '../components/AdBanner'
@@ -12,9 +15,10 @@ import AdBanner from '../components/AdBanner'
 interface LobbyPageProps {
   nickname: string
   onJoin: (code: string) => void
+  onSettings: () => void
 }
 
-export default function LobbyPage({ nickname, onJoin }: LobbyPageProps) {
+export default function LobbyPage({ nickname, onJoin, onSettings }: LobbyPageProps) {
   const [joinCode, setJoinCode] = useState(
     () => new URLSearchParams(window.location.search).get('room') ?? ''
   )
@@ -51,12 +55,21 @@ export default function LobbyPage({ nickname, onJoin }: LobbyPageProps) {
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', p: 2 }}>
       <Paper sx={{ width: '100%', maxWidth: 420, p: 3 }}>
-        <Typography variant="overline" color="text.secondary" sx={{ fontWeight: 700, display: 'block', mb: 0.5 }}>
-          Hey, <strong>{nickname}</strong>!
-        </Typography>
-        <Typography variant="h5" sx={{ fontWeight: 800, letterSpacing: '-0.02em', mb: 3 }}>
-          What do you want to do?
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 3 }}>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="overline" color="text.secondary" sx={{ fontWeight: 700, display: 'block', mb: 0.5 }}>
+              Hey, <strong>{nickname}</strong>!
+            </Typography>
+            <Typography variant="h5" sx={{ fontWeight: 800, letterSpacing: '-0.02em' }}>
+              What do you want to do?
+            </Typography>
+          </Box>
+          <Tooltip title="Settings">
+            <IconButton size="small" onClick={onSettings} sx={{ mt: 0.5 }}>
+              <SettingsIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Box>
 
         <Button
           variant="contained"

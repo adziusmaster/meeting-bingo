@@ -3,38 +3,210 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Privacy Policy – Meeting Bingo</title>
+  <title>Privacy Policy — Meeting Bingo</title>
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 680px; margin: 48px auto; padding: 0 24px; line-height: 1.7; color: #1e293b; }
-    h1 { font-size: 1.6rem; margin-bottom: 0.25rem; }
-    h2 { font-size: 1.1rem; margin-top: 2rem; }
-    p, li { color: #334155; }
-    a { color: #0ea5e9; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(160deg, #060d1f 0%, #0d1a35 100%);
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 2rem 1rem 4rem;
+      line-height: 1.7;
+    }
+
+    .container { max-width: 720px; margin: 0 auto; }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-bottom: 2rem;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .back-link:hover { color: #94a3b8; }
+
+    header { margin-bottom: 2.5rem; }
+
+    .app-name {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #3b82f6;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #fff 30%, #06b6d4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.4rem;
+    }
+
+    .last-updated { font-size: 0.85rem; color: #64748b; }
+
+    section {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 16px;
+      padding: 1.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    h2 {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #06b6d4;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 1rem;
+    }
+
+    p { font-size: 0.95rem; color: #cbd5e1; margin-bottom: 0.85rem; }
+    p:last-child { margin-bottom: 0; }
+
+    ul { list-style: none; padding: 0; margin-bottom: 0.85rem; }
+    ul:last-child { margin-bottom: 0; }
+
+    ul li {
+      font-size: 0.95rem;
+      color: #cbd5e1;
+      padding: 0.3rem 0 0.3rem 1.4rem;
+      position: relative;
+    }
+    ul li::before { content: '•'; color: #3b82f6; position: absolute; left: 0.4rem; }
+
+    a { color: #3b82f6; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .highlight {
+      background: rgba(59,130,246,0.08);
+      border: 1px solid rgba(59,130,246,0.25);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      font-size: 0.9rem;
+      color: #93c5fd;
+      margin-top: 0.75rem;
+    }
   </style>
 </head>
 <body>
-  <h1>Privacy Policy</h1>
-  <p><em>Last updated: April 2026</em></p>
+  <div class="container">
 
-  <p>Meeting Bingo ("the app") is a real-time multiplayer bingo game for use during meetings. This policy explains what data we collect and how we use it.</p>
+    <a class="back-link" href="/">← Back to Meeting Bingo</a>
 
-  <h2>Data we collect</h2>
-  <ul>
-    <li><strong>Nickname</strong> — a display name you choose. It is stored in our database and visible to other players in the same room.</li>
-    <li><strong>Game state</strong> — the bingo card assigned to you, which tiles you have marked, and whether you have won. This data is stored only for the duration of the game session.</li>
-    <li><strong>Room data</strong> — room codes and word lists created by room hosts.</li>
-  </ul>
+    <header>
+      <div class="app-name">🎱 Meeting Bingo</div>
+      <h1>Privacy Policy</h1>
+      <p class="last-updated">Last updated: April 2026</p>
+    </header>
 
-  <h2>Data we do not collect</h2>
-  <p>We do not collect email addresses, phone numbers, location data, payment information, or any form of persistent personal profile.</p>
+    <section>
+      <h2>Overview</h2>
+      <p>Meeting Bingo ("the app") is a real-time multiplayer bingo game for use during work meetings. This policy explains what information we collect, how we use it, and your rights.</p>
+      <p>We collect the minimum data necessary to run the game. We do not sell your personal information to third parties.</p>
+    </section>
 
-  <h2>Third-party services</h2>
-  <p>The app uses <strong>Google Firebase</strong> (Firestore) to store and sync game state in real time. Firebase may collect usage metrics subject to <a href="https://firebase.google.com/support/privacy" target="_blank">Google's privacy policy</a>.</p>
+    <section>
+      <h2>Information We Collect</h2>
+      <p>When you sign in with Google, we receive and store:</p>
+      <ul>
+        <li>Your Google account ID — used to uniquely identify you</li>
+        <li>Your display name — pre-filled as a nickname suggestion</li>
+        <li>Your email address — shown in the settings screen only</li>
+        <li>Your Google profile picture — shown in the game header</li>
+      </ul>
+      <p>We also store game data you create:</p>
+      <ul>
+        <li>Your chosen nickname — permanent and unique across all players</li>
+        <li>Your bingo card state during active games</li>
+        <li>A timestamped record of games you have won, used for win counts and the leaderboard</li>
+      </ul>
+    </section>
 
-  <h2>Data retention</h2>
-  <p>Game rooms and player data are not automatically deleted. Room codes are short-lived in practice — once a room code is lost, the data is no longer accessible to players.</p>
+    <section>
+      <h2>How We Use Your Data</h2>
+      <ul>
+        <li>To create and identify your player account across sessions and devices</li>
+        <li>To enforce nickname uniqueness so each player has a distinct identity</li>
+        <li>To track your win history and display it on the global leaderboard</li>
+        <li>To sync your bingo card in real time with other players in your room</li>
+        <li>To display your profile picture in the game interface</li>
+      </ul>
+      <p>We do not use your data for marketing, profiling, or automated decision-making.</p>
+    </section>
 
-  <h2>Contact</h2>
-  <p>For questions about this policy, open an issue on the project repository or contact the app owner directly.</p>
+    <section>
+      <h2>Third-Party Services</h2>
+      <ul>
+        <li>
+          <strong>Firebase (Google LLC)</strong> — authentication, real-time database, and hosting. Data is stored on Google's servers in the EU or US.
+          <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase Privacy Policy →</a>
+        </li>
+        <li>
+          <strong>Google AdSense</strong> — serves advertisements within the app. Google may use cookies to personalise ads based on your activity.
+          <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener">Google Ads Policy →</a>
+        </li>
+        <li>
+          <strong>Google Sign-In</strong> — used for authentication, subject to
+          <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google's Privacy Policy →</a>
+        </li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Data Retention</h2>
+      <p>Your account data (nickname and Google ID link) is retained indefinitely so your nickname remains reserved and your win history is preserved.</p>
+      <p>Game room data (bingo cards and marked tiles) is kept for the duration of the active session and may be cleaned up periodically.</p>
+      <p>The global leaderboard shows only the last 8 hours of wins; the underlying records are kept longer for your personal win count.</p>
+    </section>
+
+    <section>
+      <h2>Cookies &amp; Local Storage</h2>
+      <p>The app uses browser storage (localStorage and sessionStorage) to remember your preferences (theme, sound settings) and your active game session. No tracking cookies are set by the app itself.</p>
+      <p>Google AdSense may set cookies for ad personalisation. You can opt out via <a href="https://adssettings.google.com" target="_blank" rel="noopener">Google Ad Settings</a>.</p>
+    </section>
+
+    <section>
+      <h2>Your Rights (GDPR)</h2>
+      <p>If you are in the European Economic Area, you have the right to:</p>
+      <ul>
+        <li>Access the personal data we hold about you</li>
+        <li>Request correction of inaccurate data</li>
+        <li>Request deletion of your account and all associated data</li>
+        <li>Object to or restrict the processing of your data</li>
+        <li>Withdraw consent at any time by signing out</li>
+        <li>Lodge a complaint with your national data protection authority</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Children's Privacy</h2>
+      <p>Meeting Bingo is intended for adults in professional settings. We do not knowingly collect personal information from anyone under the age of 13. If you believe a child has provided us with data, please contact us and we will delete it.</p>
+    </section>
+
+    <section>
+      <h2>Contact &amp; Data Deletion Requests</h2>
+      <p>To ask about your data or request deletion, contact us:</p>
+      <div class="highlight">
+        Open an issue at:
+        <a href="https://github.com/adziusmaster/meeting-bingo/issues" target="_blank" rel="noopener">
+          github.com/adziusmaster/meeting-bingo/issues
+        </a>
+        <br /><br />
+        We will respond within 30 days.
+      </div>
+    </section>
+
+  </div>
 </body>
 </html>

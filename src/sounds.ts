@@ -1,3 +1,11 @@
+export function isSoundEnabled(): boolean {
+  return localStorage.getItem('bingo_sound') !== 'off'
+}
+
+export function setSoundEnabled(enabled: boolean): void {
+  localStorage.setItem('bingo_sound', enabled ? 'on' : 'off')
+}
+
 let _ctx: AudioContext | null = null
 
 function getCtx(): AudioContext {
@@ -6,6 +14,7 @@ function getCtx(): AudioContext {
 }
 
 export function playClick(): void {
+  if (!isSoundEnabled()) return
   try {
     const ac = getCtx()
     const osc = ac.createOscillator()
@@ -23,6 +32,7 @@ export function playClick(): void {
 }
 
 export function playBingo(): void {
+  if (!isSoundEnabled()) return
   try {
     const ac = getCtx()
     // C5 → E5 → G5 → C6 fanfare
