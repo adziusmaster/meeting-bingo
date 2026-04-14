@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Box from '@mui/material/Box'
 import Paper from '@mui/material/Paper'
 import Typography from '@mui/material/Typography'
@@ -9,6 +9,7 @@ import TextField from '@mui/material/TextField'
 import Divider from '@mui/material/Divider'
 import Avatar from '@mui/material/Avatar'
 import Chip from '@mui/material/Chip'
+import Tooltip from '@mui/material/Tooltip'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import VolumeUpIcon from '@mui/icons-material/VolumeUp'
 import VolumeOffIcon from '@mui/icons-material/VolumeOff'
@@ -19,8 +20,12 @@ import EditIcon from '@mui/icons-material/Edit'
 import CheckIcon from '@mui/icons-material/Check'
 import CloseIcon from '@mui/icons-material/Close'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
-import { auth, claimNick, checkNickTaken } from '../firebase'
+import LockIcon from '@mui/icons-material/Lock'
+import { useTheme } from '@mui/material/styles'
+import { auth, claimNick, checkNickTaken, getUserTotalWins, getUserAchievements, getUserSelectedTheme, saveUserTheme } from '../firebase'
 import type { User } from '../firebase'
+import { CARD_THEMES } from '../themes'
+import { ACHIEVEMENTS } from '../achievements'
 
 const PRIVACY_POLICY_URL = 'https://meeting-bingo-a52cc.web.app/privacy.html'
 const FEEDBACK_URL = 'https://github.com/adziusmaster/meeting-bingo/issues'
@@ -62,12 +67,35 @@ export default function SettingsPage({
   onBack, onNicknameChange, onToggleSound, onToggleTheme, onSignOut,
 }: SettingsPageProps) {
   const user = auth.currentUser as User | null
+  const { palette } = useTheme()
+  const isDark = palette.mode === 'dark'
 
   const [editingNick, setEditingNick]   = useState(false)
   const [nickValue, setNickValue]       = useState(nickname)
   const [nickError, setNickError]       = useState('')
   const [checking, setChecking]         = useState(false)
   const [saved, setSaved]               = useState(false)
+
+  const [totalWins, setTotalWins]           = useState(0)
+  const [unlockedAchievements, setUnlockedAchievements] = useState<string[]>([])
+  const [selectedThemeId, setSelectedThemeId] = useState<string>('navy_night')
+
+  useEffect(() => {
+    Promise.all([
+      getUserTotalWins(nickname),
+      getUserAchievements(nickname),
+      getUserSelectedTheme(nickname),
+    ]).then(([wins, achievements, themeId]) => {
+      setTotalWins(wins)
+      setUnlockedAchievements(achievements)
+      setSelectedThemeId(themeId)
+    }).catch(() => {})
+  }, [nickname])
+
+  async function handleSelectTheme(themeId: string) {
+    setSelectedThemeId(themeId)
+    await saveUserTheme(nickname, themeId)
+  }
 
   async function handleNickBlur() {
     if (!user) return
@@ -200,6 +228,118 @@ export default function SettingsPage({
           >
             <Switch checked={themeMode === 'dark'} onChange={onToggleTheme} size="small" />
           </SettingRow>
+        </Paper>
+
+        {/* Card Themes */}
+        <Paper sx={{ p: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 1.5 }}>
+            <Typography variant="overline" color="text.secondary" sx={{ fontWeight: 700 }}>
+              Card Themes
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              {totalWins} win{totalWins !== 1 ? 's' : ''} total
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1 }}>
+            {CARD_THEMES.map(t => {
+              const unlocked = totalWins >= t.requiredWins
+              const selected = selectedThemeId === t.id
+              return (
+                <Tooltip
+                  key={t.id}
+                  title={unlocked ? t.name : `Unlock at ${t.requiredWins} wins`}
+                  placement="top"
+                >
+                  <Box
+                    onClick={() => unlocked && handleSelectTheme(t.id)}
+                    sx={{
+                      borderRadius: 2,
+                      border: '2px solid',
+                      borderColor: selected ? t.accentColor : isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                      p: 1.25,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      cursor: unlocked ? 'pointer' : 'default',
+                      opacity: unlocked ? 1 : 0.38,
+                      transition: 'border-color 0.15s, box-shadow 0.15s',
+                      boxShadow: selected ? `0 0 0 1px ${t.accentColor}` : 'none',
+                      background: selected
+                        ? isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'
+                        : 'transparent',
+                      '&:hover': unlocked && !selected ? {
+                        borderColor: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.25)',
+                      } : {},
+                    }}
+                  >
+                    <Typography sx={{ fontSize: '1.5rem', lineHeight: 1 }}>
+                      {unlocked ? t.emoji : '🔒'}
+                    </Typography>
+                    <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.68rem', textAlign: 'center', lineHeight: 1.2 }}>
+                      {t.name}
+                    </Typography>
+                    {t.requiredWins > 0 && (
+                      <Typography variant="caption" sx={{ fontSize: '0.6rem', color: unlocked ? t.accentColor : 'text.disabled' }}>
+                        {unlocked ? '✓ unlocked' : `${t.requiredWins} wins`}
+                      </Typography>
+                    )}
+                    {t.requiredWins === 0 && (
+                      <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'text.disabled' }}>
+                        free
+                      </Typography>
+                    )}
+                  </Box>
+                </Tooltip>
+              )
+            })}
+          </Box>
+        </Paper>
+
+        {/* Achievements */}
+        <Paper sx={{ p: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 1.5 }}>
+            <Typography variant="overline" color="text.secondary" sx={{ fontWeight: 700 }}>
+              Achievements
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              {unlockedAchievements.length} / {ACHIEVEMENTS.length} unlocked
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+            {ACHIEVEMENTS.map(ach => {
+              const unlocked = unlockedAchievements.includes(ach.id)
+              return (
+                <Box
+                  key={ach.id}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1.5,
+                    p: 1,
+                    borderRadius: 1.5,
+                    opacity: unlocked ? 1 : 0.4,
+                    background: unlocked
+                      ? isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'
+                      : 'transparent',
+                  }}
+                >
+                  <Typography sx={{ fontSize: '1.4rem', lineHeight: 1, width: 28, textAlign: 'center' }}>
+                    {unlocked ? ach.icon : <LockIcon sx={{ fontSize: '1.1rem', color: 'text.disabled' }} />}
+                  </Typography>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.82rem' }}>
+                      {ach.name}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                      {ach.description}
+                    </Typography>
+                  </Box>
+                  {unlocked && <CheckIcon sx={{ fontSize: '1rem', color: 'success.main' }} />}
+                </Box>
+              )
+            })}
+          </Box>
         </Paper>
 
         {/* Account */}
