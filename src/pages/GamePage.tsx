@@ -46,6 +46,14 @@ export default function GamePage({ roomCode, nickname, onLeave }: GamePageProps)
     setWordInput(room.words.join('\n'))
   }, [room?.status]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Reset per-round refs when the host sends everyone back to waiting
+  useEffect(() => {
+    if (room?.status === 'waiting') {
+      didInitCard.current = false
+      didAnnounce.current = false
+    }
+  }, [room?.status]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // Initialise this player's card when the game starts
   useEffect(() => {
     if (room?.status !== 'playing') return

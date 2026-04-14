@@ -2,6 +2,7 @@ import Box from '@mui/material/Box'
 import Paper from '@mui/material/Paper'
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
+import CircularProgress from '@mui/material/CircularProgress'
 import { keyframes } from '@emotion/react'
 import type { Room } from '../../types'
 
@@ -56,8 +57,15 @@ export default function EndedView({ room, nickname, isCreator, onReset, onLeave 
         </Typography>
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, width: '100%', mt: 1 }}>
-          {isCreator && (
+          {isCreator ? (
             <Button variant="contained" onClick={onReset}>Play again</Button>
+          ) : (
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, py: 1 }}>
+              <CircularProgress size={16} thickness={5} />
+              <Typography variant="caption" color="text.secondary">
+                Waiting for <strong>{room.createdBy}</strong> to start the next round…
+              </Typography>
+            </Box>
           )}
           <Button variant="outlined" onClick={onLeave}>Leave game</Button>
         </Box>
