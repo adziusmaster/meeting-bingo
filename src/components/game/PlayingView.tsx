@@ -1,7 +1,12 @@
 import Box from '@mui/material/Box'
+import IconButton from '@mui/material/IconButton'
+import Tooltip from '@mui/material/Tooltip'
 import BingoBoard from './BingoBoard'
 import Scoreboard from './Scoreboard'
-import type { Room, Player } from '../../types'
+import EmojiReactions from './EmojiReactions'
+import type { Room, Player, Reaction } from '../../types'
+
+const REACTION_EMOJIS = ['🔥', '😂', '😱', '👏', '💀', '🎉']
 
 interface PlayingViewProps {
   room: Room
@@ -9,11 +14,14 @@ interface PlayingViewProps {
   players: Player[]
   nickname: string
   winCells: Set<number>
+  oneAwayCells: Set<number>
+  reactions: Reaction[]
   onTileClick: (index: number) => void
+  onReact: (emoji: string) => void
 }
 
 export default function PlayingView({
-  room, player, players, nickname, winCells, onTileClick,
+  room, player, players, nickname, winCells, oneAwayCells, reactions, onTileClick, onReact,
 }: PlayingViewProps) {
   return (
     <>
@@ -43,15 +51,45 @@ export default function PlayingView({
           flex: 1,
         }}
       >
-        <BingoBoard
-          card={player.card}
-          marked={player.marked}
-          winCells={winCells}
-          disabled={!!room.winner}
-          onTileClick={onTileClick}
-        />
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+          <BingoBoard
+            card={player.card}
+            marked={player.marked}
+            winCells={winCells}
+            oneAwayCells={oneAwayCells}
+            disabled={!!room.winner}
+            onTileClick={onTileClick}
+          />
+
+          {/* Reaction bar */}
+          <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
+            {REACTION_EMOJIS.map(emoji => (
+              <Tooltip key={emoji} title="React">
+                <IconButton
+                  size="small"
+                  onClick={() => onReact(emoji)}
+                  sx={{
+                    fontSize: '1.25rem',
+                    width: 36,
+                    height: 36,
+                    borderRadius: 2,
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    transition: 'transform 0.12s, background 0.12s',
+                    '&:hover': { transform: 'scale(1.25)', background: 'rgba(255,255,255,0.08)' },
+                    '&:active': { transform: 'scale(0.9)' },
+                  }}
+                >
+                  {emoji}
+                </IconButton>
+              </Tooltip>
+            ))}
+          </Box>
+        </Box>
+
         <Scoreboard players={players} nickname={nickname} />
       </Box>
+
+      <EmojiReactions reactions={reactions} />
     </>
   )
 }

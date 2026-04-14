@@ -13,6 +13,7 @@ import {
   query,
   where,
   orderBy,
+  limit,
 } from 'firebase/firestore'
 import {
   getAuth,
@@ -22,7 +23,7 @@ import {
   GoogleAuthProvider,
   type User,
 } from 'firebase/auth'
-import type { Room, Player } from './types'
+import type { Room, Player, Reaction } from './types'
 
 const firebaseConfig = {
   apiKey: "AIzaSyCC3bCK8naG6NwYFuf5gyzPhMB2RnQePzE",
@@ -92,6 +93,23 @@ export function checkWin(marked: boolean[]): boolean {
     [0, 6, 12, 18, 24], [4, 8, 12, 16, 20],
   ]
   return lines.some(line => line.every(i => marked[i]))
+}
+
+export function getOneAwayCells(marked: boolean[]): Set<number> {
+  const cells = new Set<number>()
+  if (!marked || marked.length !== 25) return cells
+  const lines = [
+    [0, 1, 2, 3, 4], [5, 6, 7, 8, 9], [10, 11, 12, 13, 14],
+    [15, 16, 17, 18, 19], [20, 21, 22, 23, 24],
+    [0, 5, 10, 15, 20], [1, 6, 11, 16, 21], [2, 7, 12, 17, 22],
+    [3, 8, 13, 18, 23], [4, 9, 14, 19, 24],
+    [0, 6, 12, 18, 24], [4, 8, 12, 16, 20],
+  ]
+  lines.forEach(line => {
+    const unmarked = line.filter(i => !marked[i])
+    if (unmarked.length === 1) cells.add(unmarked[0])
+  })
+  return cells
 }
 
 export function getWinningCells(marked: boolean[]): Set<number> {
@@ -255,4 +273,24 @@ export function subscribeToPlayers(roomCode: string, cb: (players: Player[]) => 
   return onSnapshot(collection(db, 'rooms', roomCode, 'players'), snap => {
     cb(snap.docs.map(d => d.data() as Player))
   })
+}
+
+export async function sendReaction(roomCode: string, nickname: string, emoji: string): Promise<void> {
+  await addDoc(collection(db, 'rooms', roomCode, 'reactions'), {
+    nickname, emoji, sentAt: serverTimestamp(),
+  })
+}
+
+export function subscribeToReactions(
+  roomCode: string,
+  cb: (reactions: Reaction[]) => void
+): () => void {
+  return onSnapshot(
+    query(
+      collection(db, 'rooms', roomCode, 'reactions'),
+      orderBy('sentAt', 'desc'),
+      limit(30)
+    ),
+    snap => cb(snap.docs.map(d => ({ id: d.id, ...d.data() } as Reaction)))
+  )
 }

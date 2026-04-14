@@ -4,13 +4,21 @@ import TextField from '@mui/material/TextField'
 import Button from '@mui/material/Button'
 import Chip from '@mui/material/Chip'
 import Box from '@mui/material/Box'
-import { DEFAULT_WORDS } from '../../constants'
+import { DEFAULT_WORDS, WORD_CATEGORIES } from '../../constants'
+import type { WordCategory } from '../../constants'
 
 interface WordEditorProps {
   wordInput: string
   wordError: string
   onChange: (v: string) => void
   onStart: () => void
+}
+
+const CATEGORY_ICONS: Record<WordCategory, string> = {
+  'Corporate Buzzwords': '💼',
+  'Tech Standup':        '💻',
+  'Sales Call':          '📞',
+  'Management':          '📊',
 }
 
 export default function WordEditor({ wordInput, wordError, onChange, onStart }: WordEditorProps) {
@@ -39,8 +47,27 @@ export default function WordEditor({ wordInput, wordError, onChange, onStart }: 
           onClick={() => onChange(DEFAULT_WORDS.join('\n'))}
           sx={{ ml: 'auto', fontSize: '0.72rem', color: 'text.secondary' }}
         >
-          Reset to defaults
+          Reset
         </Button>
+      </Box>
+
+      {/* Category quick-picks */}
+      <Box>
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.75 }}>
+          Quick-load a category:
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+          {(Object.keys(WORD_CATEGORIES) as WordCategory[]).map(cat => (
+            <Chip
+              key={cat}
+              label={`${CATEGORY_ICONS[cat]} ${cat}`}
+              size="small"
+              clickable
+              onClick={() => onChange(WORD_CATEGORIES[cat].join('\n'))}
+              sx={{ fontSize: '0.72rem' }}
+            />
+          ))}
+        </Box>
       </Box>
 
       <Typography variant="caption" color="text.secondary">
@@ -49,7 +76,7 @@ export default function WordEditor({ wordInput, wordError, onChange, onStart }: 
 
       <TextField
         multiline
-        rows={14}
+        rows={10}
         value={wordInput}
         onChange={e => onChange(e.target.value)}
         placeholder="Enter buzzwords, one per line…"

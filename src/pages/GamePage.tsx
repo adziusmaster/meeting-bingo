@@ -5,14 +5,16 @@ import Typography from '@mui/material/Typography'
 import {
   subscribeToRoom, subscribeToPlayer, subscribeToPlayers,
   startGame, updateWords, initPlayerCard,
-  markTile, announceWinner, checkWin, getWinningCells, resetGame, resetPlayerCards,
+  markTile, announceWinner, checkWin, getWinningCells, getOneAwayCells,
+  resetGame, resetPlayerCards, sendReaction, subscribeToReactions,
 } from '../firebase'
 import { DEFAULT_WORDS } from '../constants'
+import { playClick, playBingo } from '../sounds'
 import GameHeader from '../components/game/GameHeader'
 import WaitingView from '../components/game/WaitingView'
 import PlayingView from '../components/game/PlayingView'
 import EndedView from '../components/game/EndedView'
-import type { Room, Player } from '../types'
+import type { Room, Player, Reaction } from '../types'
 
 interface GamePageProps {
   roomCode: string
@@ -21,22 +23,24 @@ interface GamePageProps {
 }
 
 export default function GamePage({ roomCode, nickname, onLeave }: GamePageProps) {
-  const [room, setRoom] = useState<Room | null>(null)
-  const [player, setPlayer] = useState<Player | null>(null)
+  const [room, setRoom]       = useState<Room | null>(null)
+  const [player, setPlayer]   = useState<Player | null>(null)
   const [players, setPlayers] = useState<Player[]>([])
+  const [reactions, setReactions] = useState<Reaction[]>([])
   const [wordInput, setWordInput] = useState(() => DEFAULT_WORDS.join('\n'))
   const [wordError, setWordError] = useState('')
-  const [copied, setCopied] = useState(false)
-  const didInitCard = useRef(false)
-  const didAnnounce = useRef(false)
+  const [copied, setCopied]   = useState(false)
+  const didInitCard   = useRef(false)
+  const didAnnounce   = useRef(false)
   const didFirstRoomLoad = useRef(false)
 
-  useEffect((): (() => void) => subscribeToRoom(roomCode, setRoom), [roomCode])
+  useEffect((): (() => void) => subscribeToRoom(roomCode, setRoom),       [roomCode])
   useEffect((): (() => void) => subscribeToPlayer(roomCode, nickname, setPlayer), [roomCode, nickname])
   useEffect((): (() => void) => subscribeToPlayers(roomCode, setPlayers), [roomCode])
+  useEffect((): (() => void) => subscribeToReactions(roomCode, setReactions), [roomCode])
 
-  // Sync word input on status changes — but skip initial load so Firebase's
-  // stale words don't overwrite the current DEFAULT_WORDS from constants.
+  // Sync word input on status changes — skip initial load so Firebase's
+  // stale words don't overwrite DEFAULT_WORDS from constants.
   useEffect(() => {
     if (!room?.words?.length) return
     if (!didFirstRoomLoad.current) {
@@ -49,8 +53,8 @@ export default function GamePage({ roomCode, nickname, onLeave }: GamePageProps)
   // Reset per-round refs when the host sends everyone back to waiting
   useEffect(() => {
     if (room?.status === 'waiting') {
-      didInitCard.current = false
-      didAnnounce.current = false
+      didInitCard.current  = false
+      didAnnounce.current  = false
     }
   }, [room?.status]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -70,6 +74,7 @@ export default function GamePage({ roomCode, nickname, onLeave }: GamePageProps)
     if (room.winner || didAnnounce.current) return
     if (checkWin(player.marked)) {
       didAnnounce.current = true
+      playBingo()
       announceWinner(roomCode, nickname, players.length)
     }
   }, [player?.marked]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -89,17 +94,18 @@ export default function GamePage({ roomCode, nickname, onLeave }: GamePageProps)
     if (!player?.marked || player.marked.length !== 25) return
     if (player.card[index] === 'FREE') return
     if (room?.status !== 'playing' || room?.winner) return
+    playClick()
     const newMarked = [...player.marked]
     newMarked[index] = !newMarked[index]
     await markTile(roomCode, nickname, newMarked)
   }
 
   async function handleReset() {
-    didInitCard.current = false
-    didAnnounce.current = false
-    setWordInput(DEFAULT_WORDS.join('\n'))   // instant local update
-    await updateWords(roomCode, DEFAULT_WORDS) // words first so sync effect gets correct data
-    await resetPlayerCards(roomCode)          // clear all cards so no instant-win on rejoin
+    didInitCard.current  = false
+    didAnnounce.current  = false
+    setWordInput(DEFAULT_WORDS.join('\n'))
+    await updateWords(roomCode, DEFAULT_WORDS)
+    await resetPlayerCards(roomCode)
     await resetGame(roomCode)
   }
 
@@ -117,14 +123,18 @@ export default function GamePage({ roomCode, nickname, onLeave }: GamePageProps)
     )
   }
 
-  const isCreator = room.createdBy === nickname
-  const winCells = player.marked ? getWinningCells(player.marked) : new Set<number>()
+  const isCreator  = room.createdBy === nickname
+  const winCells   = player.marked ? getWinningCells(player.marked) : new Set<number>()
+  const oneAwayCells = (room.status === 'playing' && !room.winner && player.marked)
+    ? getOneAwayCells(player.marked)
+    : new Set<number>()
 
   if (room.status === 'ended') {
     return (
       <EndedView
         room={room}
         nickname={nickname}
+        players={players}
         isCreator={isCreator}
         onReset={handleReset}
         onLeave={onLeave}
@@ -164,7 +174,10 @@ export default function GamePage({ roomCode, nickname, onLeave }: GamePageProps)
               players={players}
               nickname={nickname}
               winCells={winCells}
+              oneAwayCells={oneAwayCells}
+              reactions={reactions}
               onTileClick={handleTile}
+              onReact={(emoji) => sendReaction(roomCode, nickname, emoji)}
             />
           )
       )}

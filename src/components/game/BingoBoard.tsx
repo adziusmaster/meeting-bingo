@@ -8,15 +8,28 @@ const pulseWin = keyframes`
   50%       { box-shadow: 0 0 30px rgba(16,185,129,0.85); }
 `
 
+const oneAwayPulse = keyframes`
+  0%, 100% { box-shadow: 0 0 8px rgba(251,191,36,0.35); }
+  50%       { box-shadow: 0 0 22px rgba(251,191,36,0.9); }
+`
+
+const markPop = keyframes`
+  0%   { transform: scale(1); }
+  35%  { transform: scale(0.82); }
+  65%  { transform: scale(1.09); }
+  100% { transform: scale(1); }
+`
+
 interface BingoBoardProps {
   card: string[]
   marked: boolean[]
   winCells: Set<number>
+  oneAwayCells: Set<number>
   disabled: boolean
   onTileClick: (index: number) => void
 }
 
-function tileStyle(isFree: boolean, isMarked: boolean, isWinning: boolean) {
+function tileStyle(isFree: boolean, isMarked: boolean, isWinning: boolean, isOneAway: boolean) {
   if (isFree) {
     return {
       background: 'rgba(59,130,246,0.18)',
@@ -38,6 +51,15 @@ function tileStyle(isFree: boolean, isMarked: boolean, isWinning: boolean) {
       background: 'linear-gradient(135deg, rgba(251,191,36,0.3), rgba(249,115,22,0.2))',
       borderColor: 'rgba(251,191,36,0.6)',
       color: '#fbbf24',
+      animation: `${markPop} 0.32s ease`,
+    }
+  }
+  if (isOneAway) {
+    return {
+      background: 'rgba(251,191,36,0.06)',
+      borderColor: 'rgba(251,191,36,0.45)',
+      color: '#f1f5f9',
+      animation: `${oneAwayPulse} 1.5s ease-in-out infinite`,
     }
   }
   return {
@@ -47,7 +69,7 @@ function tileStyle(isFree: boolean, isMarked: boolean, isWinning: boolean) {
   }
 }
 
-export default function BingoBoard({ card, marked, winCells, disabled, onTileClick }: BingoBoardProps) {
+export default function BingoBoard({ card, marked, winCells, oneAwayCells, disabled, onTileClick }: BingoBoardProps) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
       {/* Column headers */}
@@ -72,9 +94,10 @@ export default function BingoBoard({ card, marked, winCells, disabled, onTileCli
       {/* 5×5 grid */}
       <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '5px' }}>
         {card.map((word, i) => {
-          const isFree = word === 'FREE'
-          const isMarked = marked[i]
-          const isWinning = winCells.has(i)
+          const isFree     = word === 'FREE'
+          const isMarked   = marked[i]
+          const isWinning  = winCells.has(i)
+          const isOneAway  = !isMarked && !isWinning && oneAwayCells.has(i)
 
           return (
             <ButtonBase
@@ -105,7 +128,7 @@ export default function BingoBoard({ card, marked, winCells, disabled, onTileCli
                   boxShadow: '0 4px 16px rgba(59,130,246,0.2)',
                 },
                 '&:active:not(.Mui-disabled)': { transform: 'scale(0.96)' },
-                ...tileStyle(isFree, isMarked, isWinning),
+                ...tileStyle(isFree, isMarked, isWinning, isOneAway),
               }}
             >
               {word}

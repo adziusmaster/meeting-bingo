@@ -18,3 +18,10 @@ export interface UserProfile {
   nickname: string
   lastSeen: { toDate(): Date }
 }
+
+export interface Reaction {
+  id: string
+  nickname: string
+  emoji: string
+  sentAt: { toDate(): Date } | null
+}

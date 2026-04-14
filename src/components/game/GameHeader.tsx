@@ -4,9 +4,11 @@ import Typography from '@mui/material/Typography'
 import Chip from '@mui/material/Chip'
 import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
+import Avatar from '@mui/material/Avatar'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import CheckIcon from '@mui/icons-material/Check'
 import ShareIcon from '@mui/icons-material/Share'
+import { auth } from '../../firebase'
 
 const APP_URL = 'https://meeting-bingo-a52cc.web.app'
 
@@ -18,6 +20,8 @@ interface GameHeaderProps {
 }
 
 export default function GameHeader({ roomCode, nickname, copied, onCopyCode }: GameHeaderProps) {
+  const photoURL = auth.currentUser?.photoURL
+
   async function handleShare() {
     const joinUrl = `${APP_URL}?room=${roomCode}`
     const shareData = {
@@ -46,9 +50,17 @@ export default function GameHeader({ roomCode, nickname, copied, onCopyCode }: G
         <Typography variant="subtitle1" sx={{ fontWeight: 800, letterSpacing: '-0.02em', flex: 1 }}>
           🎱 Meeting Bingo
         </Typography>
-        <Typography variant="caption" color="text.secondary">
-          Playing as <strong>{nickname}</strong>
-        </Typography>
+
+        {photoURL ? (
+          <Tooltip title={nickname}>
+            <Avatar src={photoURL} sx={{ width: 28, height: 28 }} />
+          </Tooltip>
+        ) : (
+          <Typography variant="caption" color="text.secondary">
+            Playing as <strong>{nickname}</strong>
+          </Typography>
+        )}
+
         <Chip
           label={`${roomCode}${copied ? ' ✓' : ''}`}
           onClick={onCopyCode}

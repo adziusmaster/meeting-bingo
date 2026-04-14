@@ -9,6 +9,49 @@ export const NICK_SUGGESTIONS: string[] = [
   'YOLOYolanda', 'ZeroDefectZach',
 ]
 
+export const TECH_STANDUP_WORDS: string[] = [
+  'PR review', 'merge conflict', 'flaky test', 'tech debt', 'refactor',
+  'breaking change', 'hotfix', 'rollback', 'regression', 'feature flag',
+  'code review', 'CI/CD', 'pipeline failed', 'green build', 'deploy',
+  'incident', 'postmortem', 'on-call', 'SLA breach', 'null pointer',
+  'race condition', 'memory leak', 'query timeout', 'cache miss', 'rate limit',
+  'dependency update', 'security patch', 'code freeze', 'staging', 'production',
+  'monitoring alert', 'latency spike', 'load test', 'documentation', 'unit test',
+  'integration test', 'E2E test', 'type error', 'linter', 'dead code',
+  'rebase', 'squash', 'cherry-pick', 'hotpath', 'profiling',
+  'containerize', 'Kubernetes', 'Docker', 'serverless', 'microservice',
+  'message queue', 'event-driven', 'observability', 'tracing', 'logging',
+]
+
+export const SALES_CALL_WORDS: string[] = [
+  'decision maker', 'budget approved', 'quarterly target', 'discount request',
+  'competitor mention', 'POC', 'pilot program', 'contract review', 'legal sign-off',
+  'procurement', 'use case demo', 'pain point', 'value proposition', 'ROI',
+  'next steps', 'follow-up email', 'objection handling', 'pipeline review',
+  'forecast', 'close plan', 'champion identified', 'C-suite buy-in', 'redline',
+  'SLA negotiation', 'renewal', 'upsell', 'expansion', 'NPS score',
+  'customer success', 'churn risk', 'cold call', 'warm lead', 'discovery',
+  'qualification', 'BANT', 'mutual action plan', 'executive sponsor',
+  'proof of value', 'business case', 'total cost', 'competitive pricing',
+  'preferred vendor', 'go-live date', 'implementation', 'onboarding plan',
+  'success metrics', 'QBR', 'health score', 'product roadmap ask',
+  'compliance check', 'security review', 'reference call', 'case study',
+]
+
+export const MANAGEMENT_WORDS: string[] = [
+  'strategic alignment', 'headcount', 'budget freeze', 'OKRs', 'KPIs',
+  'town hall', 'all-hands', 'org restructure', 'performance review', 'top talent',
+  'culture fit', 'change management', 'digital transformation', 'cost center',
+  'quarterly review', 'board presentation', 'market share', 'risk management',
+  'compliance', 'ESG', 'diversity quota', 'hybrid policy', 'return to office',
+  'synergy', 'stakeholder', 'executive alignment', 'vision statement', 'north star',
+  'transformation roadmap', 'capacity planning', 'resource allocation', 'trade-off',
+  'prioritization', 'escalation', 'bandwidth', 'buy-in', 'accountability',
+  'cross-functional', 'silo', 'transparency', 'psychological safety', 'growth mindset',
+  'stretch goal', 'low-hanging fruit', 'quick win', 'deep dive', 'parking lot',
+  'take it offline', 'circle back', 'actionable insight', 'data-driven', 'impact',
+]
+
 export const DEFAULT_WORDS: string[] = [
   "synergy", "alignment", "pivot", "agile", "sprint", 
   "blocker", "bandwidth", "offline", "circle back", "deep dive",
@@ -51,4 +94,13 @@ export const DEFAULT_WORDS: string[] = [
   "punt", "right-size", "scale back", "ramp up", "sunset",
   "deprecate", "end of life", "ping me", "read out", "knowledge transfer"
 ];
+
+export type WordCategory = 'Corporate Buzzwords' | 'Tech Standup' | 'Sales Call' | 'Management'
+
+export const WORD_CATEGORIES: Record<WordCategory, string[]> = {
+  'Corporate Buzzwords': DEFAULT_WORDS,
+  'Tech Standup': TECH_STANDUP_WORDS,
+  'Sales Call': SALES_CALL_WORDS,
+  'Management': MANAGEMENT_WORDS,
+}
 
