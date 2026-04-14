@@ -14,6 +14,9 @@ import {
   where,
   orderBy,
   limit,
+  arrayUnion,
+  arrayRemove,
+  increment,
 } from 'firebase/firestore'
 import {
   getAuth,
@@ -23,7 +26,7 @@ import {
   GoogleAuthProvider,
   type User,
 } from 'firebase/auth'
-import type { Room, Player, Reaction } from './types'
+import type { Room, Player, Reaction, ChatMessage, GameMode, WinCondition } from './types'
 
 const firebaseConfig = {
   apiKey: "AIzaSyCC3bCK8naG6NwYFuf5gyzPhMB2RnQePzE",
@@ -128,6 +131,72 @@ export function getWinningCells(marked: boolean[]): Set<number> {
   return cells
 }
 
+// ── Win conditions ──────────────────────────────────────────────
+
+const LINES = [
+  [0, 1, 2, 3, 4], [5, 6, 7, 8, 9], [10, 11, 12, 13, 14],
+  [15, 16, 17, 18, 19], [20, 21, 22, 23, 24],
+  [0, 5, 10, 15, 20], [1, 6, 11, 16, 21], [2, 7, 12, 17, 22],
+  [3, 8, 13, 18, 23], [4, 9, 14, 19, 24],
+  [0, 6, 12, 18, 24], [4, 8, 12, 16, 20],
+]
+
+const CORNER_CELLS = [0, 4, 20, 24]
+const X_DIAG_1 = [0, 6, 12, 18, 24]
+const X_DIAG_2 = [4, 8, 12, 16, 20]
+
+export function checkWinCondition(marked: boolean[], condition: WinCondition): boolean {
+  if (!marked || marked.length !== 25) return false
+  switch (condition) {
+    case 'line':
+      return LINES.some(line => line.every(i => marked[i]))
+    case 'corners':
+      return CORNER_CELLS.every(i => marked[i])
+    case 'x_pattern':
+      return X_DIAG_1.every(i => marked[i]) && X_DIAG_2.every(i => marked[i])
+    case 'blackout':
+      return marked.every(Boolean)
+  }
+}
+
+export function getWinConditionCells(marked: boolean[], condition: WinCondition): Set<number> {
+  const cells = new Set<number>()
+  if (!marked || marked.length !== 25) return cells
+  switch (condition) {
+    case 'line':
+      LINES.forEach(line => {
+        if (line.every(i => marked[i])) line.forEach(i => cells.add(i))
+      })
+      break
+    case 'corners':
+      if (CORNER_CELLS.every(i => marked[i])) CORNER_CELLS.forEach(i => cells.add(i))
+      break
+    case 'x_pattern':
+      if (X_DIAG_1.every(i => marked[i]) && X_DIAG_2.every(i => marked[i])) {
+        X_DIAG_1.forEach(i => cells.add(i))
+        X_DIAG_2.forEach(i => cells.add(i))
+      }
+      break
+    case 'blackout':
+      if (marked.every(Boolean)) marked.forEach((_, i) => cells.add(i))
+      break
+  }
+  return cells
+}
+
+export function computeCalledMarked(card: string[], calledWords: string[]): boolean[] {
+  const calledSet = new Set(calledWords.map(w => w.toLowerCase()))
+  return card.map(word => word === 'FREE' || calledSet.has(word.toLowerCase()))
+}
+
+export async function callWord(roomCode: string, word: string): Promise<void> {
+  await updateDoc(doc(db, 'rooms', roomCode), { calledWords: arrayUnion(word) })
+}
+
+export async function uncallWord(roomCode: string, word: string): Promise<void> {
+  await updateDoc(doc(db, 'rooms', roomCode), { calledWords: arrayRemove(word) })
+}
+
 // ── Nick identity ───────────────────────────────────────────────
 
 // Claim a nickname for a Google UID. Writes to two places:
@@ -187,10 +256,16 @@ export function subscribeToRecentLeaderboard(
 
 // ── Firestore game operations ───────────────────────────────────
 
-export async function createRoom(nickname: string, words: string[]): Promise<string> {
+export async function createRoom(
+  nickname: string,
+  words: string[],
+  gameMode: GameMode = 'classic',
+  winCondition: WinCondition = 'line',
+): Promise<string> {
   const code = generateRoomCode()
   await setDoc(doc(db, 'rooms', code), {
     code, words, status: 'waiting', createdBy: nickname, winner: null, wordsLocked: false,
+    gameMode, winCondition, calledWords: [],
     createdAt: serverTimestamp(),
   })
   await setDoc(doc(db, 'rooms', code, 'players', nickname), {
@@ -239,6 +314,7 @@ export async function announceWinner(roomCode: string, nickname: string, playerC
   const ops: Promise<unknown>[] = [
     updateDoc(doc(db, 'rooms', roomCode), { status: 'ended', winner: nickname }),
     updateDoc(doc(db, 'rooms', roomCode, 'players', nickname), { hasWon: true }),
+    setDoc(doc(db, 'users', nickname), { totalWins: increment(1) }, { merge: true }),
   ]
   if (playerCount > 1) {
     ops.push(addDoc(collection(db, 'wins'), { nickname, roomCode, wonAt: serverTimestamp() }))
@@ -254,7 +330,7 @@ export async function resetPlayerCards(roomCode: string): Promise<void> {
 }
 
 export async function resetGame(roomCode: string): Promise<void> {
-  await updateDoc(doc(db, 'rooms', roomCode), { status: 'waiting', winner: null, wordsLocked: true })
+  await updateDoc(doc(db, 'rooms', roomCode), { status: 'waiting', winner: null, wordsLocked: true, calledWords: [] })
 }
 
 export function subscribeToRoom(roomCode: string, cb: (room: Room) => void): () => void {
@@ -293,4 +369,97 @@ export function subscribeToReactions(
     ),
     snap => cb(snap.docs.map(d => ({ id: d.id, ...d.data() } as Reaction)))
   )
+}
+
+// ── Chat ───────────────────────────────────────────────────────
+
+export async function sendChatMessage(roomCode: string, nickname: string, text: string): Promise<void> {
+  await addDoc(collection(db, 'rooms', roomCode, 'messages'), {
+    nickname,
+    text,
+    sentAt: serverTimestamp(),
+  })
+}
+
+export function subscribeToChatMessages(
+  roomCode: string,
+  cb: (messages: ChatMessage[]) => void
+): () => void {
+  return onSnapshot(
+    query(
+      collection(db, 'rooms', roomCode, 'messages'),
+      orderBy('sentAt', 'asc'),
+      limit(60)
+    ),
+    snap => cb(snap.docs.map(d => ({ id: d.id, ...d.data() } as ChatMessage)))
+  )
+}
+
+// ── Achievements ───────────────────────────────────────────────
+
+export async function getUserAchievements(nickname: string): Promise<string[]> {
+  const snap = await getDoc(doc(db, 'users', nickname))
+  if (!snap.exists()) return []
+  return (snap.data().achievements as string[]) ?? []
+}
+
+export async function unlockAchievement(nickname: string, achievementId: string): Promise<void> {
+  await setDoc(doc(db, 'users', nickname), { achievements: arrayUnion(achievementId) }, { merge: true })
+}
+
+export function subscribeToUserAchievements(
+  nickname: string,
+  cb: (achievements: string[]) => void
+): () => void {
+  return onSnapshot(doc(db, 'users', nickname), snap => {
+    if (snap.exists()) {
+      cb((snap.data().achievements as string[]) ?? [])
+    } else {
+      cb([])
+    }
+  })
+}
+
+export async function getHatTrickCount(nickname: string): Promise<number> {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const snap = await getDocs(
+    query(collection(db, 'wins'), where('nickname', '==', nickname), where('wonAt', '>=', today))
+  )
+  return snap.size
+}
+
+// ── All-time leaderboard ───────────────────────────────────────
+
+export function subscribeToAllTimeLeaderboard(
+  cb: (entries: { nickname: string; wins: number }[]) => void
+): () => void {
+  return onSnapshot(
+    query(collection(db, 'users'), orderBy('totalWins', 'desc'), limit(15)),
+    snap => {
+      cb(
+        snap.docs
+          .map(d => ({ nickname: d.data().nickname as string ?? d.id, wins: (d.data().totalWins as number) ?? 0 }))
+          .filter(e => e.wins > 0)
+      )
+    }
+  )
+}
+
+// ── Card themes ────────────────────────────────────────────────
+
+export async function getUserSelectedTheme(nickname: string): Promise<string> {
+  const snap = await getDoc(doc(db, 'users', nickname))
+  if (!snap.exists()) return 'navy_night'
+  return (snap.data().selectedTheme as string) ?? 'navy_night'
+}
+
+export async function saveUserTheme(nickname: string, themeId: string): Promise<void> {
+  await setDoc(doc(db, 'users', nickname), { selectedTheme: themeId }, { merge: true })
+}
+
+export async function getUserTotalWins(nickname: string): Promise<number> {
+  const snap = await getDoc(doc(db, 'users', nickname))
+  if (!snap.exists()) return 0
+  return (snap.data().totalWins as number) ?? 0
 }

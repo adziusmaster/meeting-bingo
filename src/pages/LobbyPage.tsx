@@ -7,16 +7,25 @@ import Button from '@mui/material/Button'
 import Divider from '@mui/material/Divider'
 import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
+import Chip from '@mui/material/Chip'
 import SettingsIcon from '@mui/icons-material/Settings'
 import { createRoom, joinRoom } from '../firebase'
 import { DEFAULT_WORDS } from '../constants'
 import AdBanner from '../components/AdBanner'
+import type { GameMode, WinCondition } from '../types'
 
 interface LobbyPageProps {
   nickname: string
   onJoin: (code: string) => void
   onSettings: () => void
 }
+
+const WIN_CONDITIONS: { value: WinCondition; label: string }[] = [
+  { value: 'line', label: 'Line' },
+  { value: 'corners', label: 'Corners' },
+  { value: 'x_pattern', label: 'X Pattern' },
+  { value: 'blackout', label: 'Blackout' },
+]
 
 export default function LobbyPage({ nickname, onJoin, onSettings }: LobbyPageProps) {
   const [joinCode, setJoinCode] = useState(
@@ -25,12 +34,15 @@ export default function LobbyPage({ nickname, onJoin, onSettings }: LobbyPagePro
   const [error, setError] = useState('')
   const [creating, setCreating] = useState(false)
   const [joining, setJoining] = useState(false)
+  const [showCreateSettings, setShowCreateSettings] = useState(false)
+  const [gameMode, setGameMode] = useState<GameMode>('classic')
+  const [winCondition, setWinCondition] = useState<WinCondition>('line')
 
   async function handleCreate() {
     setCreating(true)
     setError('')
     try {
-      const code = await createRoom(nickname, DEFAULT_WORDS)
+      const code = await createRoom(nickname, DEFAULT_WORDS, gameMode, winCondition)
       onJoin(code)
     } catch (e) {
       setError((e as Error).message)
@@ -71,15 +83,89 @@ export default function LobbyPage({ nickname, onJoin, onSettings }: LobbyPagePro
           </Tooltip>
         </Box>
 
-        <Button
-          variant="contained"
-          size="large"
-          fullWidth
-          onClick={handleCreate}
-          disabled={creating}
-        >
-          {creating ? 'Creating room…' : 'Create a new room'}
-        </Button>
+        {!showCreateSettings ? (
+          <Button
+            variant="contained"
+            size="large"
+            fullWidth
+            onClick={() => setShowCreateSettings(true)}
+            disabled={creating}
+          >
+            Create a new room
+          </Button>
+        ) : (
+          <Paper variant="outlined" sx={{ p: 2, mb: 0.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {/* Game Mode */}
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
+                Game Mode
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Button
+                  variant={gameMode === 'classic' ? 'contained' : 'outlined'}
+                  size="small"
+                  onClick={() => setGameMode('classic')}
+                  sx={{ flex: 1, flexDirection: 'column', py: 1, gap: 0.25 }}
+                >
+                  <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.82rem' }}>Classic</Typography>
+                  <Typography variant="caption" sx={{ fontSize: '0.6rem', opacity: 0.7, lineHeight: 1.2 }}>
+                    Mark tiles yourself as buzzwords are said
+                  </Typography>
+                </Button>
+                <Button
+                  variant={gameMode === 'called' ? 'contained' : 'outlined'}
+                  size="small"
+                  onClick={() => setGameMode('called')}
+                  sx={{ flex: 1, flexDirection: 'column', py: 1, gap: 0.25 }}
+                >
+                  <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.82rem' }}>Called</Typography>
+                  <Typography variant="caption" sx={{ fontSize: '0.6rem', opacity: 0.7, lineHeight: 1.2 }}>
+                    Host calls words — boards update automatically
+                  </Typography>
+                </Button>
+              </Box>
+            </Box>
+
+            {/* Win Condition */}
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
+                Win Condition
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+                {WIN_CONDITIONS.map(wc => (
+                  <Chip
+                    key={wc.value}
+                    label={wc.label}
+                    size="small"
+                    onClick={() => setWinCondition(wc.value)}
+                    color={winCondition === wc.value ? 'primary' : 'default'}
+                    variant={winCondition === wc.value ? 'filled' : 'outlined'}
+                    sx={{ fontWeight: 600 }}
+                  />
+                ))}
+              </Box>
+            </Box>
+
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button
+                variant="contained"
+                size="large"
+                fullWidth
+                onClick={handleCreate}
+                disabled={creating}
+              >
+                {creating ? 'Creating room...' : 'Create Room \u2192'}
+              </Button>
+              <Button
+                size="small"
+                onClick={() => setShowCreateSettings(false)}
+                sx={{ color: 'text.secondary', minWidth: 'auto' }}
+              >
+                Cancel
+              </Button>
+            </Box>
+          </Paper>
+        )}
 
         <Divider sx={{ my: 2.5, color: 'text.secondary', fontSize: '0.75rem' }}>or join an existing one</Divider>
 
@@ -108,7 +194,7 @@ export default function LobbyPage({ nickname, onJoin, onSettings }: LobbyPagePro
             fullWidth
             disabled={joining || joinCode.trim().length < 1}
           >
-            {joining ? 'Joining…' : 'Join room'}
+            {joining ? 'Joining...' : 'Join room'}
           </Button>
         </Box>
 

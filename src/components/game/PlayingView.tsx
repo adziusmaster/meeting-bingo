@@ -1,13 +1,15 @@
 import Box from '@mui/material/Box'
 import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
-import { useTheme } from '@mui/material/styles'
 import BingoBoard from './BingoBoard'
 import Scoreboard from './Scoreboard'
 import EmojiReactions from './EmojiReactions'
-import type { Room, Player, Reaction } from '../../types'
+import ChatPanel from './ChatPanel'
+import CalledWordsPanel from './CalledWordsPanel'
+import type { Room, Player, Reaction, ChatMessage } from '../../types'
+import type { CardTheme } from '../../themes'
 
-const REACTION_EMOJIS = ['🔥', '😂', '😱', '👏', '💀', '🎉']
+const REACTION_EMOJIS = ['\uD83D\uDD25', '\uD83D\uDE02', '\uD83D\uDE31', '\uD83D\uDC4F', '\uD83D\uDC80', '\uD83C\uDF89']
 
 interface PlayingViewProps {
   room: Room
@@ -19,13 +21,19 @@ interface PlayingViewProps {
   reactions: Reaction[]
   onTileClick: (index: number) => void
   onReact: (emoji: string) => void
+  messages: ChatMessage[]
+  onSendMessage: (text: string) => void
+  computedMarked?: boolean[]
+  cardTheme?: CardTheme
 }
 
 export default function PlayingView({
   room, player, players, nickname, winCells, oneAwayCells, reactions, onTileClick, onReact,
+  messages, onSendMessage, computedMarked, cardTheme,
 }: PlayingViewProps) {
-  const { palette } = useTheme()
-  const isDark = palette.mode === 'dark'
+  const isHost = room.createdBy === nickname
+  const isCalledMode = (room.gameMode ?? 'classic') === 'called'
+  const displayMarked = computedMarked ?? player.marked
 
   return (
     <>
@@ -40,7 +48,7 @@ export default function PlayingView({
             fontSize: '0.95rem',
           }}
         >
-          🎉 {room.winner === nickname ? 'You got' : `${room.winner} got`} BINGO!
+          {'\uD83C\uDF89'} {room.winner === nickname ? 'You got' : `${room.winner} got`} BINGO!
         </Box>
       )}
 
@@ -58,11 +66,14 @@ export default function PlayingView({
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
           <BingoBoard
             card={player.card}
-            marked={player.marked}
+            marked={displayMarked}
             winCells={winCells}
             oneAwayCells={oneAwayCells}
             disabled={!!room.winner}
             onTileClick={onTileClick}
+            gameMode={room.gameMode}
+            calledWords={room.calledWords}
+            theme={cardTheme}
           />
 
           {/* Reaction bar */}
@@ -78,9 +89,9 @@ export default function PlayingView({
                     height: 36,
                     borderRadius: 2,
                     border: '1px solid',
-                    borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)',
+                    borderColor: 'divider',
                     transition: 'transform 0.12s, background 0.12s',
-                    '&:hover': { transform: 'scale(1.25)', background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)' },
+                    '&:hover': { transform: 'scale(1.25)', background: 'rgba(255,255,255,0.08)' },
                     '&:active': { transform: 'scale(0.9)' },
                   }}
                 >
@@ -91,7 +102,24 @@ export default function PlayingView({
           </Box>
         </Box>
 
-        <Scoreboard players={players} nickname={nickname} />
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <Scoreboard players={players} nickname={nickname} />
+
+          {isHost && isCalledMode && room.status === 'playing' && (
+            <CalledWordsPanel
+              roomCode={room.code}
+              words={room.words}
+              calledWords={room.calledWords ?? []}
+            />
+          )}
+
+          <ChatPanel
+            roomCode={room.code}
+            nickname={nickname}
+            messages={messages}
+            onSendMessage={onSendMessage}
+          />
+        </Box>
       </Box>
 
       <EmojiReactions reactions={reactions} />

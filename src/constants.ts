@@ -95,12 +95,54 @@ export const DEFAULT_WORDS: string[] = [
   "deprecate", "end of life", "ping me", "read out", "knowledge transfer"
 ];
 
-export type WordCategory = 'Corporate Buzzwords' | 'Tech Standup' | 'Sales Call' | 'Management'
+export const HR_WORDS: string[] = [
+  'performance review', 'headcount', 'talent pipeline', 'onboarding', 'offboarding',
+  'culture add', 'values alignment', 'psychological safety', 'feedback loop', 'growth plan',
+  'career ladder', 'skip level', 'PIP', 'HRBP', 'people ops',
+  'engagement survey', 'eNPS', 'pulse check', 'inclusion', 'belonging',
+  'compensation review', 'leveling', 'total rewards', 'benefits', 'parental leave',
+  'hybrid', 'async-first', 'core hours', 'team building', 'offsites',
+  'town hall', 'culture deck', 'handbook', 'org design', 'span of control',
+  'succession planning', 'attrition', 'retention strategy', 'work-life balance', 'burnout',
+  'wellbeing', 'EAP', 'diversity hire', 'blind screening', 'structured interview',
+  'culture fit', 'values interview', 'reference check', 'offer letter', 'equity refresh',
+]
+
+export const PRODUCT_WORDS: string[] = [
+  'discovery', 'problem statement', 'jobs to be done', 'user research', 'persona',
+  'journey map', 'pain point', 'opportunity sizing', 'PRD', 'MRD',
+  'feature request', 'backlog grooming', 'prioritization', 'RICE score', 'impact effort matrix',
+  'north star metric', 'OKR', 'hypothesis', 'A/B test', 'experiment',
+  'rollout', 'feature flag', 'dogfooding', 'beta user', 'customer interview',
+  'NPS', 'CSAT', 'retention', 'activation', 'aha moment',
+  'product-market fit', 'CAC', 'LTV', 'churn', 'funnel',
+  'conversion rate', 'cohort analysis', 'retention curve', 'DAU', 'MAU',
+  'stickiness', 'engagement', 'session length', 'time to value', 'onboarding flow',
+  'empty state', 'progressive disclosure', 'design system', 'accessibility', 'mobile-first',
+]
+
+export const DESIGN_WORDS: string[] = [
+  'wireframe', 'mockup', 'prototype', 'figma', 'user flow',
+  'information architecture', 'navigation', 'hierarchy', 'whitespace', 'typography',
+  'color palette', 'contrast ratio', 'accessibility', 'WCAG', 'component library',
+  'design system', 'atomic design', 'tokens', 'spacing', 'grid',
+  'breakpoint', 'responsive', 'mobile-first', 'dark mode', 'illustration',
+  'iconography', 'animation', 'micro-interaction', 'loading state', 'empty state',
+  'error state', 'success state', 'feedback', 'affordance', 'discoverability',
+  'cognitive load', 'mental model', 'progressive disclosure', 'onboarding', 'tooltip',
+  'modal', 'drawer', 'toast', 'snackbar', 'skeleton',
+  'shimmer', 'hero', 'CTA', 'above the fold', 'scroll depth', 'eye tracking',
+]
+
+export type WordCategory = 'Corporate Buzzwords' | 'Tech Standup' | 'Sales Call' | 'Management' | 'HR & People' | 'Product Meeting' | 'Design Review'
 
 export const WORD_CATEGORIES: Record<WordCategory, string[]> = {
   'Corporate Buzzwords': DEFAULT_WORDS,
   'Tech Standup': TECH_STANDUP_WORDS,
   'Sales Call': SALES_CALL_WORDS,
   'Management': MANAGEMENT_WORDS,
+  'HR & People': HR_WORDS,
+  'Product Meeting': PRODUCT_WORDS,
+  'Design Review': DESIGN_WORDS,
 }
 

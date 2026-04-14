@@ -5,10 +5,10 @@ import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
 import CircularProgress from '@mui/material/CircularProgress'
 import { keyframes } from '@emotion/react'
-import { useTheme } from '@mui/material/styles'
 import confetti from 'canvas-confetti'
 import { getWinningCells } from '../../firebase'
-import type { Room, Player } from '../../types'
+import PostGameStats from './PostGameStats'
+import type { Room, Player, WinCondition } from '../../types'
 import AdBanner from '../AdBanner'
 
 const bounce = keyframes`
@@ -27,12 +27,10 @@ interface EndedViewProps {
 
 function MiniBoard({ player }: { player: Player }) {
   const winCells = getWinningCells(player.marked ?? [])
-  const { palette } = useTheme()
-  const isDark = palette.mode === 'dark'
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
       <Typography variant="caption" sx={{ fontWeight: 700, mb: 0.5, fontSize: '0.65rem' }} noWrap>
-        {player.hasWon ? '🏆 ' : ''}{player.nickname}
+        {player.hasWon ? '\uD83C\uDFC6 ' : ''}{player.nickname}
       </Typography>
       <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(5, 18px)', gap: '2px' }}>
         {(player.card ?? []).map((word, i) => {
@@ -51,12 +49,12 @@ function MiniBoard({ player }: { player: Player }) {
                   ? '#10b981'
                   : isMarked || isFree
                     ? 'rgba(251,191,36,0.5)'
-                    : isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                    : 'rgba(255,255,255,0.1)',
                 background: isWin
                   ? 'rgba(16,185,129,0.35)'
                   : isMarked || isFree
                     ? 'rgba(251,191,36,0.2)'
-                    : isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+                    : 'rgba(255,255,255,0.04)',
               }}
             />
           )
@@ -88,7 +86,7 @@ export default function EndedView({ room, nickname, players, isCreator, onReset,
         }}
       >
         <Box sx={{ fontSize: '4rem', lineHeight: 1, animation: `${bounce} 0.6s ease infinite alternate` }}>
-          {iWon ? '🏆' : '😔'}
+          {iWon ? '\uD83C\uDFC6' : '\uD83D\uDE14'}
         </Box>
 
         <Typography
@@ -119,7 +117,7 @@ export default function EndedView({ room, nickname, players, isCreator, onReset,
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, py: 1 }}>
               <CircularProgress size={16} thickness={5} />
               <Typography variant="caption" color="text.secondary">
-                Waiting for <strong>{room.createdBy}</strong> to start the next round…
+                Waiting for <strong>{room.createdBy}</strong> to start the next round...
               </Typography>
             </Box>
           )}
@@ -142,6 +140,13 @@ export default function EndedView({ room, nickname, players, isCreator, onReset,
           </Box>
         </Paper>
       )}
+
+      {/* Post-game stats */}
+      <PostGameStats
+        players={players}
+        winner={room.winner ?? ''}
+        winCondition={(room.winCondition ?? 'line') as WinCondition}
+      />
     </Box>
   )
 }

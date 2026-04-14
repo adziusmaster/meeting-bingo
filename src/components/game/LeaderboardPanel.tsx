@@ -2,28 +2,25 @@ import { useEffect, useState } from 'react'
 import Paper from '@mui/material/Paper'
 import Typography from '@mui/material/Typography'
 import Box from '@mui/material/Box'
-import { useTheme } from '@mui/material/styles'
-import { subscribeToRecentLeaderboard } from '../../firebase'
+import Tabs from '@mui/material/Tabs'
+import Tab from '@mui/material/Tab'
+import { subscribeToRecentLeaderboard, subscribeToAllTimeLeaderboard } from '../../firebase'
 
 interface Entry { nickname: string; wins: number }
 
-const MEDALS = ['🥇', '🥈', '🥉']
+const MEDALS = ['\uD83E\uDD47', '\uD83E\uDD48', '\uD83E\uDD49']
 
-export default function LeaderboardPanel() {
-  const [entries, setEntries] = useState<Entry[]>([])
-  const { palette } = useTheme()
-  const isDark = palette.mode === 'dark'
-
-  useEffect(() => subscribeToRecentLeaderboard(setEntries), [])
-
-  if (entries.length === 0) return null
+function EntryList({ entries, subtitle }: { entries: Entry[]; subtitle: string }) {
+  if (entries.length === 0) {
+    return (
+      <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center', py: 2, display: 'block' }}>
+        No wins yet
+      </Typography>
+    )
+  }
 
   return (
-    <Paper sx={{ flex: 1, minWidth: 200, p: 2.5 }}>
-      <Typography variant="overline" color="text.secondary" sx={{ fontWeight: 700, display: 'block', mb: 1.5 }}>
-        Today's winners
-      </Typography>
-
+    <>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
         {entries.map((e, i) => (
           <Box
@@ -31,9 +28,9 @@ export default function LeaderboardPanel() {
             sx={{
               display: 'flex', alignItems: 'center', gap: 1,
               px: 1, py: 0.5, borderRadius: 2,
-              background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+              background: 'rgba(255,255,255,0.04)',
               border: '1px solid',
-              borderColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.08)',
+              borderColor: 'divider',
             }}
           >
             <Typography sx={{ fontSize: '1rem', lineHeight: 1, width: 22 }}>
@@ -43,15 +40,46 @@ export default function LeaderboardPanel() {
               {e.nickname}
             </Typography>
             <Typography variant="caption" sx={{ color: 'secondary.main', fontWeight: 700 }}>
-              {e.wins}×
+              {e.wins}{'\u00D7'}
             </Typography>
           </Box>
         ))}
       </Box>
 
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1.5, opacity: 0.5 }}>
-        Last 8 hours
+        {subtitle}
       </Typography>
+    </>
+  )
+}
+
+export default function LeaderboardPanel() {
+  const [tab, setTab] = useState(0)
+  const [recentEntries, setRecentEntries] = useState<Entry[]>([])
+  const [allTimeEntries, setAllTimeEntries] = useState<Entry[]>([])
+
+  useEffect(() => subscribeToRecentLeaderboard(setRecentEntries), [])
+  useEffect(() => subscribeToAllTimeLeaderboard(setAllTimeEntries), [])
+
+  if (recentEntries.length === 0 && allTimeEntries.length === 0) return null
+
+  return (
+    <Paper sx={{ flex: 1, minWidth: 200, p: 2.5 }}>
+      <Typography variant="overline" color="text.secondary" sx={{ fontWeight: 700, display: 'block', mb: 0.5 }}>
+        Leaderboard
+      </Typography>
+
+      <Tabs
+        value={tab}
+        onChange={(_, v) => setTab(v)}
+        sx={{ minHeight: 36, mb: 1.5 }}
+      >
+        <Tab label="Today" sx={{ minHeight: 36, py: 0.5, px: 1.5, fontSize: '0.72rem' }} />
+        <Tab label="All time" sx={{ minHeight: 36, py: 0.5, px: 1.5, fontSize: '0.72rem' }} />
+      </Tabs>
+
+      {tab === 0 && <EntryList entries={recentEntries} subtitle="Last 8 hours" />}
+      {tab === 1 && <EntryList entries={allTimeEntries} subtitle="All time" />}
     </Paper>
   )
 }

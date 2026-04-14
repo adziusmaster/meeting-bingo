@@ -3,13 +3,20 @@ import Paper from '@mui/material/Paper'
 import CircularProgress from '@mui/material/CircularProgress'
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
+import Chip from '@mui/material/Chip'
 import LockIcon from '@mui/icons-material/Lock'
-import { useTheme } from '@mui/material/styles'
 import PlayersPanel from './PlayersPanel'
 import WordEditor from './WordEditor'
 import LeaderboardPanel from './LeaderboardPanel'
 import AdBanner from '../AdBanner'
 import type { Room, Player } from '../../types'
+
+const WIN_CONDITION_LABELS: Record<string, string> = {
+  line: 'Line',
+  corners: 'Corners',
+  x_pattern: 'X Pattern',
+  blackout: 'Blackout',
+}
 
 interface WaitingViewProps {
   room: Room
@@ -26,9 +33,11 @@ export default function WaitingView({
   room, players, nickname, isCreator,
   wordInput, wordError, onWordChange, onStart,
 }: WaitingViewProps) {
-  const { palette } = useTheme()
-  const isDark = palette.mode === 'dark'
   const wordsLocked = room.wordsLocked ?? false
+  const gameMode = room.gameMode ?? 'classic'
+  const winCondition = room.winCondition ?? 'line'
+  const modeLabel = gameMode === 'called' ? 'Called mode' : 'Classic mode'
+  const condLabel = WIN_CONDITION_LABELS[winCondition] ?? 'Line'
 
   return (
     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, p: 1.5, flex: 1 }}>
@@ -64,7 +73,9 @@ export default function WaitingView({
           <Box
             sx={{
               flex: 1, overflowY: 'auto', maxHeight: 280,
-              border: '1px solid', borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)', borderRadius: 1, p: 1.5,
+              border: '1px solid',
+              borderColor: 'divider',
+              borderRadius: 1, p: 1.5,
               fontSize: '0.87rem', lineHeight: 1.7, color: 'text.secondary',
               whiteSpace: 'pre-wrap',
             }}
@@ -72,7 +83,7 @@ export default function WaitingView({
             {room.words.join('\n')}
           </Box>
           <Button variant="contained" onClick={onStart}>
-            Start game →
+            Start game {'\u2192'}
           </Button>
         </Paper>
       )}
@@ -88,11 +99,21 @@ export default function WaitingView({
         >
           <CircularProgress />
           <Typography color="text.secondary">
-            Waiting for <strong>{room.createdBy}</strong> to start the game…
+            Waiting for <strong>{room.createdBy}</strong> to start the game...
           </Typography>
           <AdBanner format="rectangle" />
         </Paper>
       )}
+
+      {/* Game mode info pill */}
+      <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', mt: 0.5 }}>
+        <Chip
+          label={`${modeLabel} \u00B7 ${condLabel} win`}
+          size="small"
+          variant="outlined"
+          sx={{ fontSize: '0.72rem', fontWeight: 600 }}
+        />
+      </Box>
     </Box>
   )
 }

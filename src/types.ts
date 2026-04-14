@@ -1,3 +1,6 @@
+export type GameMode = 'classic' | 'called'
+export type WinCondition = 'line' | 'corners' | 'x_pattern' | 'blackout'
+
 export interface Room {
   code: string
   createdBy: string
@@ -5,6 +8,9 @@ export interface Room {
   words: string[]
   winner: string | null
   wordsLocked?: boolean
+  gameMode: GameMode
+  winCondition: WinCondition
+  calledWords: string[]
 }
 
 export interface Player {
@@ -23,5 +29,12 @@ export interface Reaction {
   id: string
   nickname: string
   emoji: string
+  sentAt: { toDate(): Date } | null
+}
+
+export interface ChatMessage {
+  id: string
+  nickname: string
+  text: string
   sentAt: { toDate(): Date } | null
 }
