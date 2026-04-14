@@ -49,19 +49,28 @@ export default defineConfig({
         screenshots: [
           {
             src: 'screenshots/game.png',
-            sizes: '1080x1920',
+            sizes: '392x795',
             type: 'image/png',
             form_factor: 'narrow',
             label: 'Bingo card during a meeting',
           },
           {
             src: 'screenshots/lobby.png',
-            sizes: '1080x1920',
+            sizes: '392x795',
             type: 'image/png',
             form_factor: 'narrow',
             label: 'Game lobby — create or join a room',
           },
+          {
+            src: 'screenshots/desktop.png',
+            sizes: '1280x800',
+            type: 'image/png',
+            form_factor: 'wide',
+            label: 'Meeting Bingo — lobby and game side by side',
+          },
         ],
+        // Get this code from Play Console → Content Rating, or https://www.globalratings.com
+        iarc_rating_id: 'YOUR_IARC_CODE_HERE',
         prefer_related_applications: false,
         related_applications: [
           {

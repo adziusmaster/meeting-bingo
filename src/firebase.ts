@@ -464,3 +464,32 @@ export async function getPurchasedThemes(nickname: string): Promise<string[]> {
 export async function savePurchasedTheme(nickname: string, themeId: string): Promise<void> {
   await setDoc(doc(db, 'users', nickname), { purchasedThemes: arrayUnion(themeId) }, { merge: true })
 }
+
+export async function reportMessage(
+  reportedBy: string,
+  roomCode: string,
+  message: { id: string; nickname: string; text: string }
+): Promise<void> {
+  await addDoc(collection(db, 'reports'), {
+    reportedBy,
+    roomCode,
+    messageId: message.id,
+    offenderNickname: message.nickname,
+    text: message.text,
+    reportedAt: serverTimestamp(),
+  })
+}
+
+export async function getBlockedUsers(nickname: string): Promise<string[]> {
+  const snap = await getDoc(doc(db, 'users', nickname))
+  if (!snap.exists()) return []
+  return (snap.data().blockedUsers as string[]) ?? []
+}
+
+export async function blockUser(nickname: string, targetNickname: string): Promise<void> {
+  await setDoc(doc(db, 'users', nickname), { blockedUsers: arrayUnion(targetNickname) }, { merge: true })
+}
+
+export async function unblockUser(nickname: string, targetNickname: string): Promise<void> {
+  await setDoc(doc(db, 'users', nickname), { blockedUsers: arrayRemove(targetNickname) }, { merge: true })
+}

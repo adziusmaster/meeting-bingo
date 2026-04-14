@@ -22,13 +22,15 @@ interface PlayingViewProps {
   onReact: (emoji: string) => void
   messages: ChatMessage[]
   onSendMessage: (text: string) => void
+  blockedUsers: string[]
+  onUserBlocked: (targetNickname: string) => void
   computedMarked?: boolean[]
   cardTheme?: CardTheme
 }
 
 export default function PlayingView({
   room, player, players, nickname, winCells, oneAwayCells, reactions, onTileClick, onReact,
-  messages, onSendMessage, computedMarked, cardTheme,
+  messages, onSendMessage, blockedUsers, onUserBlocked, computedMarked, cardTheme,
 }: PlayingViewProps) {
   const isHost = room.createdBy === nickname
   const displayMarked = computedMarked ?? player.marked
@@ -105,7 +107,9 @@ export default function PlayingView({
             roomCode={room.code}
             nickname={nickname}
             messages={messages}
+            blockedUsers={blockedUsers}
             onSendMessage={onSendMessage}
+            onUserBlocked={onUserBlocked}
           />
         </Box>
       </Box>

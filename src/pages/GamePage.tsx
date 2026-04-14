@@ -13,6 +13,8 @@ import {
   subscribeToUserAchievements,
   getUserSelectedTheme,
   leaveRoom,
+  getBlockedUsers,
+  blockUser,
 } from '../firebase'
 import { DEFAULT_WORDS } from '../constants'
 import { playClick, playBingo } from '../sounds'
@@ -38,6 +40,7 @@ export default function GamePage({ roomCode, nickname, onLeave }: GamePageProps)
   const [players, setPlayers] = useState<Player[]>([])
   const [reactions, setReactions] = useState<Reaction[]>([])
   const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [blockedUsers, setBlockedUsers] = useState<string[]>([])
   const [wordInput, setWordInput] = useState(() => DEFAULT_WORDS.join('\n'))
   const [wordError, setWordError] = useState('')
   const [copied, setCopied]   = useState(false)
@@ -60,6 +63,7 @@ export default function GamePage({ roomCode, nickname, onLeave }: GamePageProps)
       const t = CARD_THEMES.find(ct => ct.id === themeId)
       if (t) setCardTheme(t)
     })
+    getBlockedUsers(nickname).then(setBlockedUsers)
     getUserAchievements(nickname).then(ach => {
       knownAchievements.current = ach
     })
@@ -273,6 +277,11 @@ export default function GamePage({ roomCode, nickname, onLeave }: GamePageProps)
               onReact={(emoji) => sendReaction(roomCode, nickname, emoji)}
               messages={messages}
               onSendMessage={handleSendMessage}
+              blockedUsers={blockedUsers}
+              onUserBlocked={async (target) => {
+                await blockUser(nickname, target)
+                setBlockedUsers(prev => prev.includes(target) ? prev : [...prev, target])
+              }}
               computedMarked={computedMarked}
               cardTheme={cardTheme}
             />
