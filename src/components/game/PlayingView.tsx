@@ -1,6 +1,7 @@
 import Box from '@mui/material/Box'
 import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
+import { useTheme } from '@mui/material/styles'
 import BingoBoard from './BingoBoard'
 import Scoreboard from './Scoreboard'
 import EmojiReactions from './EmojiReactions'
@@ -23,6 +24,9 @@ interface PlayingViewProps {
 export default function PlayingView({
   room, player, players, nickname, winCells, oneAwayCells, reactions, onTileClick, onReact,
 }: PlayingViewProps) {
+  const { palette } = useTheme()
+  const isDark = palette.mode === 'dark'
+
   return (
     <>
       {room.winner && (
@@ -73,9 +77,10 @@ export default function PlayingView({
                     width: 36,
                     height: 36,
                     borderRadius: 2,
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    border: '1px solid',
+                    borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)',
                     transition: 'transform 0.12s, background 0.12s',
-                    '&:hover': { transform: 'scale(1.25)', background: 'rgba(255,255,255,0.08)' },
+                    '&:hover': { transform: 'scale(1.25)', background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)' },
                     '&:active': { transform: 'scale(0.9)' },
                   }}
                 >

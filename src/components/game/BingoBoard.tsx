@@ -2,6 +2,7 @@ import Box from '@mui/material/Box'
 import ButtonBase from '@mui/material/ButtonBase'
 import Typography from '@mui/material/Typography'
 import { keyframes } from '@emotion/react'
+import { useTheme } from '@mui/material/styles'
 
 const pulseWin = keyframes`
   0%, 100% { box-shadow: 0 0 14px rgba(16,185,129,0.5); }
@@ -29,47 +30,50 @@ interface BingoBoardProps {
   onTileClick: (index: number) => void
 }
 
-function tileStyle(isFree: boolean, isMarked: boolean, isWinning: boolean, isOneAway: boolean) {
+function tileStyle(isFree: boolean, isMarked: boolean, isWinning: boolean, isOneAway: boolean, isDark: boolean) {
   if (isFree) {
     return {
       background: 'rgba(59,130,246,0.18)',
       borderColor: 'rgba(59,130,246,0.45)',
-      color: '#06b6d4',
+      color: isDark ? '#06b6d4' : '#0284c7',
     }
   }
   if (isWinning) {
     return {
       background: 'linear-gradient(135deg, rgba(16,185,129,0.4), rgba(6,182,212,0.3))',
       borderColor: '#10b981',
-      color: '#fff',
+      color: isDark ? '#fff' : '#065f46',
       animation: `${pulseWin} 1.2s ease-in-out infinite`,
       boxShadow: '0 0 18px rgba(16,185,129,0.55)',
     }
   }
   if (isMarked) {
     return {
-      background: 'linear-gradient(135deg, rgba(251,191,36,0.3), rgba(249,115,22,0.2))',
-      borderColor: 'rgba(251,191,36,0.6)',
-      color: '#fbbf24',
+      background: 'linear-gradient(135deg, rgba(251,191,36,0.35), rgba(249,115,22,0.25))',
+      borderColor: 'rgba(251,191,36,0.65)',
+      color: isDark ? '#fbbf24' : '#92400e',
       animation: `${markPop} 0.32s ease`,
     }
   }
   if (isOneAway) {
     return {
-      background: 'rgba(251,191,36,0.06)',
+      background: isDark ? 'rgba(251,191,36,0.06)' : 'rgba(251,191,36,0.12)',
       borderColor: 'rgba(251,191,36,0.45)',
-      color: '#f1f5f9',
+      color: isDark ? '#f1f5f9' : '#1e293b',
       animation: `${oneAwayPulse} 1.5s ease-in-out infinite`,
     }
   }
   return {
-    background: 'rgba(255,255,255,0.05)',
-    borderColor: 'rgba(255,255,255,0.09)',
-    color: '#f1f5f9',
+    background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+    borderColor: isDark ? 'rgba(255,255,255,0.09)' : 'rgba(0,0,0,0.1)',
+    color: isDark ? '#f1f5f9' : '#1e293b',
   }
 }
 
 export default function BingoBoard({ card, marked, winCells, oneAwayCells, disabled, onTileClick }: BingoBoardProps) {
+  const { palette } = useTheme()
+  const isDark = palette.mode === 'dark'
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
       {/* Column headers */}
@@ -94,10 +98,10 @@ export default function BingoBoard({ card, marked, winCells, oneAwayCells, disab
       {/* 5×5 grid */}
       <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '5px' }}>
         {card.map((word, i) => {
-          const isFree     = word === 'FREE'
-          const isMarked   = marked[i]
-          const isWinning  = winCells.has(i)
-          const isOneAway  = !isMarked && !isWinning && oneAwayCells.has(i)
+          const isFree    = word === 'FREE'
+          const isMarked  = marked[i]
+          const isWinning = winCells.has(i)
+          const isOneAway = !isMarked && !isWinning && oneAwayCells.has(i)
 
           return (
             <ButtonBase
@@ -128,7 +132,7 @@ export default function BingoBoard({ card, marked, winCells, oneAwayCells, disab
                   boxShadow: '0 4px 16px rgba(59,130,246,0.2)',
                 },
                 '&:active:not(.Mui-disabled)': { transform: 'scale(0.96)' },
-                ...tileStyle(isFree, isMarked, isWinning, isOneAway),
+                ...tileStyle(isFree, isMarked, isWinning, isOneAway, isDark),
               }}
             >
               {word}

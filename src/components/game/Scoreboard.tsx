@@ -2,6 +2,7 @@ import Box from '@mui/material/Box'
 import Paper from '@mui/material/Paper'
 import Typography from '@mui/material/Typography'
 import LinearProgress from '@mui/material/LinearProgress'
+import { useTheme } from '@mui/material/styles'
 import type { Player } from '../../types'
 
 interface ScoreboardProps {
@@ -10,6 +11,9 @@ interface ScoreboardProps {
 }
 
 export default function Scoreboard({ players, nickname }: ScoreboardProps) {
+  const { palette } = useTheme()
+  const isDark = palette.mode === 'dark'
+
   const sorted = [...players].sort((a, b) => {
     if (a.hasWon !== b.hasWon) return a.hasWon ? -1 : 1
     return (b.marked?.filter(Boolean).length ?? 0) - (a.marked?.filter(Boolean).length ?? 0)
@@ -40,7 +44,7 @@ export default function Scoreboard({ players, nickname }: ScoreboardProps) {
                 ? 'success.main'
                 : p.nickname === nickname
                   ? 'rgba(59,130,246,0.45)'
-                  : 'rgba(255,255,255,0.09)',
+                  : isDark ? 'rgba(255,255,255,0.09)' : 'rgba(0,0,0,0.1)',
               background: p.hasWon ? 'rgba(16,185,129,0.07)' : undefined,
             }}
           >
@@ -52,7 +56,7 @@ export default function Scoreboard({ players, nickname }: ScoreboardProps) {
               value={pct}
               sx={{
                 width: 44, height: 5, borderRadius: 3,
-                backgroundColor: 'rgba(255,255,255,0.08)',
+                backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
                 '& .MuiLinearProgress-bar': {
                   background: 'linear-gradient(90deg, #3b82f6, #06b6d4)',
                   borderRadius: 3,

@@ -5,6 +5,7 @@ import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
 import CircularProgress from '@mui/material/CircularProgress'
 import { keyframes } from '@emotion/react'
+import { useTheme } from '@mui/material/styles'
 import confetti from 'canvas-confetti'
 import { getWinningCells } from '../../firebase'
 import type { Room, Player } from '../../types'
@@ -26,6 +27,8 @@ interface EndedViewProps {
 
 function MiniBoard({ player }: { player: Player }) {
   const winCells = getWinningCells(player.marked ?? [])
+  const { palette } = useTheme()
+  const isDark = palette.mode === 'dark'
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
       <Typography variant="caption" sx={{ fontWeight: 700, mb: 0.5, fontSize: '0.65rem' }} noWrap>
@@ -48,12 +51,12 @@ function MiniBoard({ player }: { player: Player }) {
                   ? '#10b981'
                   : isMarked || isFree
                     ? 'rgba(251,191,36,0.5)'
-                    : 'rgba(255,255,255,0.1)',
+                    : isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
                 background: isWin
                   ? 'rgba(16,185,129,0.35)'
                   : isMarked || isFree
                     ? 'rgba(251,191,36,0.2)'
-                    : 'rgba(255,255,255,0.04)',
+                    : isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
               }}
             />
           )

@@ -65,7 +65,7 @@ export default function EmojiReactions({ reactions }: { reactions: Reaction[] })
           }}
         >
           <Box sx={{ fontSize: '2rem', lineHeight: 1 }}>{f.emoji}</Box>
-          <Box sx={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.6)', fontWeight: 600, whiteSpace: 'nowrap' }}>
+          <Box sx={{ fontSize: '0.6rem', color: '#fff', fontWeight: 600, whiteSpace: 'nowrap', textShadow: '0 1px 4px rgba(0,0,0,0.7)' }}>
             {f.nickname}
           </Box>
         </Box>

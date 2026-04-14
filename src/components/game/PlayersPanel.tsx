@@ -3,6 +3,7 @@ import Typography from '@mui/material/Typography'
 import List from '@mui/material/List'
 import ListItem from '@mui/material/ListItem'
 import ListItemText from '@mui/material/ListItemText'
+import { useTheme } from '@mui/material/styles'
 import type { Player } from '../../types'
 
 interface PlayersPanelProps {
@@ -13,6 +14,9 @@ interface PlayersPanelProps {
 }
 
 export default function PlayersPanel({ players, nickname, createdBy, roomCode }: PlayersPanelProps) {
+  const { palette } = useTheme()
+  const isDark = palette.mode === 'dark'
+
   return (
     <Paper sx={{ flex: 1, minWidth: 220, p: 2.5 }}>
       <Typography
@@ -31,8 +35,9 @@ export default function PlayersPanel({ players, nickname, createdBy, roomCode }:
               px: 1, py: 0.5,
               borderRadius: 2,
               mb: 0.5,
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.07)',
+              background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+              border: '1px solid',
+              borderColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.08)',
             }}
           >
             <ListItemText

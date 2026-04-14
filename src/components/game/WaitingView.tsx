@@ -4,6 +4,7 @@ import CircularProgress from '@mui/material/CircularProgress'
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
 import LockIcon from '@mui/icons-material/Lock'
+import { useTheme } from '@mui/material/styles'
 import PlayersPanel from './PlayersPanel'
 import WordEditor from './WordEditor'
 import LeaderboardPanel from './LeaderboardPanel'
@@ -25,6 +26,8 @@ export default function WaitingView({
   room, players, nickname, isCreator,
   wordInput, wordError, onWordChange, onStart,
 }: WaitingViewProps) {
+  const { palette } = useTheme()
+  const isDark = palette.mode === 'dark'
   const wordsLocked = room.wordsLocked ?? false
 
   return (
@@ -61,7 +64,7 @@ export default function WaitingView({
           <Box
             sx={{
               flex: 1, overflowY: 'auto', maxHeight: 280,
-              border: '1px solid rgba(255,255,255,0.1)', borderRadius: 1, p: 1.5,
+              border: '1px solid', borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)', borderRadius: 1, p: 1.5,
               fontSize: '0.87rem', lineHeight: 1.7, color: 'text.secondary',
               whiteSpace: 'pre-wrap',
             }}

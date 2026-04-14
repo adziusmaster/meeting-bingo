@@ -8,6 +8,7 @@ import Avatar from '@mui/material/Avatar'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import CheckIcon from '@mui/icons-material/Check'
 import ShareIcon from '@mui/icons-material/Share'
+import { useTheme } from '@mui/material/styles'
 import { auth } from '../../firebase'
 
 const APP_URL = 'https://meeting-bingo-a52cc.web.app'
@@ -20,6 +21,8 @@ interface GameHeaderProps {
 }
 
 export default function GameHeader({ roomCode, nickname, copied, onCopyCode }: GameHeaderProps) {
+  const { palette } = useTheme()
+  const isDark = palette.mode === 'dark'
   const photoURL = auth.currentUser?.photoURL
 
   async function handleShare() {
@@ -41,9 +44,11 @@ export default function GameHeader({ roomCode, nickname, copied, onCopyCode }: G
       position="sticky"
       elevation={0}
       sx={{
-        background: 'rgba(0,0,0,0.45)',
+        background: isDark ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.82)',
         backdropFilter: 'blur(12px)',
-        borderBottom: '1px solid rgba(255,255,255,0.09)',
+        borderBottom: '1px solid',
+        borderColor: isDark ? 'rgba(255,255,255,0.09)' : 'rgba(0,0,0,0.1)',
+        color: 'text.primary',
       }}
     >
       <Toolbar sx={{ gap: 1.5 }}>
