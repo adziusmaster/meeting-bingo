@@ -70,7 +70,7 @@ export default function GamePage({ roomCode, nickname, onLeave }: GamePageProps)
     if (room.winner || didAnnounce.current) return
     if (checkWin(player.marked)) {
       didAnnounce.current = true
-      announceWinner(roomCode, nickname)
+      announceWinner(roomCode, nickname, players.length)
     }
   }, [player?.marked]) // eslint-disable-line react-hooks/exhaustive-deps
 

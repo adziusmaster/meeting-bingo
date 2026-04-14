@@ -217,12 +217,15 @@ export async function markTile(roomCode: string, nickname: string, marked: boole
   await updateDoc(doc(db, 'rooms', roomCode, 'players', nickname), { marked })
 }
 
-export async function announceWinner(roomCode: string, nickname: string): Promise<void> {
-  await Promise.all([
+export async function announceWinner(roomCode: string, nickname: string, playerCount: number): Promise<void> {
+  const ops: Promise<unknown>[] = [
     updateDoc(doc(db, 'rooms', roomCode), { status: 'ended', winner: nickname }),
     updateDoc(doc(db, 'rooms', roomCode, 'players', nickname), { hasWon: true }),
-    addDoc(collection(db, 'wins'), { nickname, roomCode, wonAt: serverTimestamp() }),
-  ])
+  ]
+  if (playerCount > 1) {
+    ops.push(addDoc(collection(db, 'wins'), { nickname, roomCode, wonAt: serverTimestamp() }))
+  }
+  await Promise.all(ops)
 }
 
 export async function resetPlayerCards(roomCode: string): Promise<void> {
