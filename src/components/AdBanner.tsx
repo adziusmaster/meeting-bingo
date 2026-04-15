@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
+import { FLAGS } from '../flags'
 
 const ADSENSE_CLIENT = 'ca-pub-6700431049727613'
 const ADSENSE_SLOT   = '2274482181'
@@ -17,7 +18,7 @@ export default function AdBanner({ format = 'auto' }: AdBannerProps) {
   const pushed = useRef(false)
 
   useEffect(() => {
-    if (pushed.current || !import.meta.env.PROD) return
+    if (pushed.current || !import.meta.env.PROD || !FLAGS.ADS_ENABLED) return
     try {
       pushed.current = true
       ;(window.adsbygoogle = window.adsbygoogle || []).push({})
@@ -26,7 +27,7 @@ export default function AdBanner({ format = 'auto' }: AdBannerProps) {
     }
   }, [])
 
-  if (!import.meta.env.PROD) return null
+  if (!import.meta.env.PROD || !FLAGS.ADS_ENABLED) return null
 
   const isSquare = format === 'rectangle'
 
