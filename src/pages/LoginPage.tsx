@@ -117,9 +117,20 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
     e.preventDefault()
     if (!user) return
     const trimmed = nick.trim()
-    if (trimmed.length < 2 || nickTaken || checking) return
-    await claimNick(trimmed, user.uid)
-    onLogin(trimmed)
+    if (trimmed.length < 2 || nickTaken) return
+    setChecking(true)
+    try {
+      const taken = await checkNickTaken(trimmed, user.uid)
+      if (taken) {
+        setNickTaken(true)
+        setSuggestions(makeSuggestions(trimmed))
+        return
+      }
+      await claimNick(trimmed, user.uid)
+      onLogin(trimmed)
+    } finally {
+      setChecking(false)
+    }
   }
 
   async function handlePlay() {
@@ -281,7 +292,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
         <Button
           type="submit"
           variant="contained"
-          disabled={nick.trim().length < 2 || nickTaken || checking}
+          disabled={nick.trim().length < 2 || nickTaken}
           size="large"
         >
           {checking ? 'Checking...' : 'Claim nickname'}

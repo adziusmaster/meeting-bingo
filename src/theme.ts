@@ -24,6 +24,9 @@ export function createAppTheme(mode: 'dark' | 'light') {
     components: {
       MuiCssBaseline: {
         styleOverrides: {
+          html: {
+            backgroundColor: mode === 'dark' ? '#060d1f' : '#f0f7ff',
+          },
           body: {
             background: mode === 'dark'
               ? 'radial-gradient(ellipse at 20% 0%, #0d2247 0%, transparent 60%), ' +
