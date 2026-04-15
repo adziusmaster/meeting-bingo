@@ -94,30 +94,11 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
     setSuggestions([])
   }
 
-  async function handleBlur() {
-    if (!user) return
-    const trimmed = nick.trim()
-    if (trimmed.length < 2) return
-    setChecking(true)
-    try {
-      const taken = await checkNickTaken(trimmed, user.uid)
-      if (taken) {
-        setNickTaken(true)
-        setSuggestions(makeSuggestions(trimmed))
-      } else {
-        setNickTaken(false)
-        setSuggestions([])
-      }
-    } finally {
-      setChecking(false)
-    }
-  }
-
   async function handleClaimNick(e: { preventDefault(): void }) {
     e.preventDefault()
-    if (!user) return
+    if (!user || checking) return
     const trimmed = nick.trim()
-    if (trimmed.length < 2 || nickTaken) return
+    if (trimmed.length < 2) return
     setChecking(true)
     try {
       const taken = await checkNickTaken(trimmed, user.uid)
@@ -263,7 +244,6 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
             value={nick}
             autoFocus
             onChange={e => handleChange(e.target.value)}
-            onBlur={handleBlur}
             slotProps={{ htmlInput: { maxLength: 20 } }}
             sx={{ flex: 1 }}
             error={nickTaken}
@@ -292,7 +272,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
         <Button
           type="submit"
           variant="contained"
-          disabled={nick.trim().length < 2 || nickTaken}
+          disabled={nick.trim().length < 2 || checking}
           size="large"
         >
           {checking ? 'Checking...' : 'Claim nickname'}
