@@ -36,6 +36,7 @@ export default function WaitingView({
   const wordsLocked = room.wordsLocked ?? false
   const winCondition = room.winCondition ?? 'line'
   const condLabel = WIN_CONDITION_LABELS[winCondition] ?? 'Line'
+  const needMorePlayers = players.length < 2
 
   return (
     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, p: 1.5, flex: 1 }}>
@@ -54,6 +55,7 @@ export default function WaitingView({
           wordError={wordError}
           onChange={onWordChange}
           onStart={onStart}
+          playerCount={players.length}
         />
       )}
 
@@ -80,8 +82,8 @@ export default function WaitingView({
           >
             {room.words.join('\n')}
           </Box>
-          <Button variant="contained" onClick={onStart}>
-            Start game {'\u2192'}
+          <Button variant="contained" onClick={onStart} disabled={needMorePlayers}>
+            {needMorePlayers ? 'Waiting for players…' : 'Start game \u2192'}
           </Button>
         </Paper>
       )}

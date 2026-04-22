@@ -134,7 +134,50 @@ export const DESIGN_WORDS: string[] = [
   'shimmer', 'hero', 'CTA', 'above the fold', 'scroll depth', 'eye tracking',
 ]
 
-export type WordCategory = 'Corporate Buzzwords' | 'Tech Standup' | 'Sales Call' | 'Management' | 'HR & People' | 'Product Meeting' | 'Design Review'
+export const QUARTERLY_UPDATE_WORDS: string[] = [
+  'Customers', 'Orders', 'Packages', 'Deliveries', 'Webshop',
+  'Stores', 'Germany', 'Netherlands', 'Belgium', 'Expansion',
+  'Growth', 'Revenue', 'Profit', 'Costs', 'Savings',
+  'Investment', 'Targets', 'Results', 'This quarter', 'Last year',
+  'Market share', 'Competitors', 'Strategy', 'Plan', 'Roadmap',
+  'Focus', 'Priorities', 'Big bets', 'Risks', 'Opportunities',
+  'Customer satisfaction', 'NPS', 'Reviews', 'Service', 'Contact',
+  'Returns', 'Repairs', 'Delivery', 'Installation', 'Same-day',
+  'Next-day', 'Evening delivery', 'Time slot', 'Track & trace', 'Pick-up point',
+  'Depot', 'Warehouse', 'Stock', 'Transport', 'Fleet',
+  'Bicycles', 'Vans', 'Drivers', 'Installers', 'Phone calls',
+  'Chat', 'Email', 'WhatsApp', 'Self-service', 'Help page',
+  'Washers', 'Fridges', 'TVs', 'Laptops', 'Phones',
+  'Headphones', 'Cameras', 'Gaming', 'Second Chance', 'Accessories',
+  'Sustainable', 'Energy label', 'CO₂', 'Solar panels', 'Returns reduction',
+  'Repair instead of replace', 'Recycling', 'Packaging', 'Waste', 'Green choices',
+  "Coolblue'ers", 'Teams', 'Domains', 'Leadership', 'Managers',
+  'Colleagues', 'New joiners', 'Promotions', 'Interns', 'Training',
+  'Onboarding', 'Development', 'Coaching', 'Feedback', 'Engagement',
+  'Well-being', 'Fun', 'Friday drinks', 'Annabel', 'Party',
+  'Culture', 'Values', 'Ownership', 'Simplicity', 'Getting things done',
+  'With a smile', 'Going the extra mile', 'Customer first', 'Surprise', 'Delight',
+  'Efficiency', 'Productivity', 'Improvements', 'Projects', 'Milestones',
+  'Deadlines', 'Celebrating wins', 'Lessons learned', 'What went well', "What we'll change",
+  'Inflation', 'Economy', 'Market', 'Consumer confidence', 'Price level',
+  'Discounts', 'Promotions', 'Campaigns', 'Black Friday', 'Christmas peak',
+  'Summer peak', 'Busy weeks', 'Capacity', 'Planning', 'Flexibility',
+  'Scaling up', 'Extra shifts', 'Overtime', 'Hiring', 'Agency staff',
+  'Digital', 'App', 'Mobile', 'Personalisation', 'Recommendations',
+  'Data', 'Dashboard', 'Insights', 'Experiments', 'Learning',
+  'AI', 'AI assistant', 'Chatbot', 'Support bot', 'Digital helper',
+  'Smart answers', 'Automation', 'Robots', 'Self-learning', 'Future of work',
+  'Germany stores', 'German customers', 'German reviews', 'Cross-border', 'Local language',
+  'Delivery times', 'New depot', 'New city', 'New warehouse', 'New jobs',
+  'Shareholders', 'Shares', 'Long-term', 'Confidence', 'Ambition',
+  'Vision', 'Mission', 'North Star', 'Next steps', 'Outlook',
+  'Questions', 'Answers', 'Hands up', 'Poll', 'Video',
+  'Music', 'Jokes', 'Story', 'Inspiration', 'Proud',
+  'Hoi allemaal', 'Hi everyone', 'Dankjewel', 'Met een glimlach', 'We did it',
+  'Even tussenstand', 'Mooi resultaat', 'Nog niet goed genoeg', 'We gaan door', 'Tot de volgende keer',
+]
+
+export type WordCategory = 'Corporate Buzzwords' | 'Tech Standup' | 'Sales Call' | 'Management' | 'HR & People' | 'Product Meeting' | 'Design Review' | 'Quarterly Update'
 
 export const WORD_CATEGORIES: Record<WordCategory, string[]> = {
   'Corporate Buzzwords': DEFAULT_WORDS,
@@ -144,5 +187,6 @@ export const WORD_CATEGORIES: Record<WordCategory, string[]> = {
   'HR & People': HR_WORDS,
   'Product Meeting': PRODUCT_WORDS,
   'Design Review': DESIGN_WORDS,
+  'Quarterly Update': QUARTERLY_UPDATE_WORDS,
 }
 

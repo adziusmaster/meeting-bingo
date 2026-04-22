@@ -12,6 +12,7 @@ interface WordEditorProps {
   wordError: string
   onChange: (v: string) => void
   onStart: () => void
+  playerCount: number
 }
 
 const CATEGORY_ICONS: Record<WordCategory, string> = {
@@ -22,10 +23,12 @@ const CATEGORY_ICONS: Record<WordCategory, string> = {
   'HR & People':         '🧑‍💼',
   'Product Meeting':     '🗺️',
   'Design Review':       '🎨',
+  'Quarterly Update':    '📈',
 }
 
-export default function WordEditor({ wordInput, wordError, onChange, onStart }: WordEditorProps) {
+export default function WordEditor({ wordInput, wordError, onChange, onStart, playerCount }: WordEditorProps) {
   const wordCount = wordInput.split('\n').filter(Boolean).length
+  const needMorePlayers = playerCount < 2
 
   return (
     <Paper
@@ -92,8 +95,8 @@ export default function WordEditor({ wordInput, wordError, onChange, onStart }: 
         </Typography>
       )}
 
-      <Button variant="contained" onClick={onStart}>
-        Start game →
+      <Button variant="contained" onClick={onStart} disabled={needMorePlayers}>
+        {needMorePlayers ? 'Waiting for players…' : 'Start game →'}
       </Button>
     </Paper>
   )

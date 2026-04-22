@@ -99,20 +99,35 @@ export function checkWin(marked: boolean[]): boolean {
   return lines.some(line => line.every(i => marked[i]))
 }
 
-export function getOneAwayCells(marked: boolean[]): Set<number> {
+export function getOneAwayCells(marked: boolean[], condition: WinCondition = 'line'): Set<number> {
   const cells = new Set<number>()
   if (!marked || marked.length !== 25) return cells
-  const lines = [
-    [0, 1, 2, 3, 4], [5, 6, 7, 8, 9], [10, 11, 12, 13, 14],
-    [15, 16, 17, 18, 19], [20, 21, 22, 23, 24],
-    [0, 5, 10, 15, 20], [1, 6, 11, 16, 21], [2, 7, 12, 17, 22],
-    [3, 8, 13, 18, 23], [4, 9, 14, 19, 24],
-    [0, 6, 12, 18, 24], [4, 8, 12, 16, 20],
-  ]
-  lines.forEach(line => {
-    const unmarked = line.filter(i => !marked[i])
+
+  // Helper: for a group of cells, if exactly 1 is unmarked, add it
+  const checkGroup = (group: number[]) => {
+    const unmarked = group.filter(i => !marked[i])
     if (unmarked.length === 1) cells.add(unmarked[0])
-  })
+  }
+
+  switch (condition) {
+    case 'line':
+      LINES.forEach(checkGroup)
+      break
+    case 'corners':
+      checkGroup(CORNER_CELLS)
+      break
+    case 'x_pattern': {
+      // One away from the full X = all 9 unique cells marked except 1
+      const xCells = [...new Set([...X_DIAG_1, ...X_DIAG_2])]
+      checkGroup(xCells)
+      break
+    }
+    case 'blackout': {
+      const allCells = Array.from({ length: 25 }, (_, i) => i)
+      checkGroup(allCells)
+      break
+    }
+  }
   return cells
 }
 

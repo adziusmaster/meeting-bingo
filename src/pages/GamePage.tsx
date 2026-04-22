@@ -18,6 +18,7 @@ import {
 } from '../firebase'
 import { DEFAULT_WORDS } from '../constants'
 import { playClick, playBingo } from '../sounds'
+import { isSoundEnabled, setSoundEnabled } from '../sounds'
 import { hapticClick, hapticWin } from '../haptics'
 import GameHeader from '../components/game/GameHeader'
 import WaitingView from '../components/game/WaitingView'
@@ -46,6 +47,7 @@ export default function GamePage({ roomCode, nickname, onLeave }: GamePageProps)
   const [copied, setCopied]   = useState(false)
   const [cardTheme, setCardTheme] = useState<CardTheme>(CARD_THEMES[0])
   const [newAchievements, setNewAchievements] = useState<string[]>([])
+  const [soundOn, setSoundOn] = useState(() => isSoundEnabled())
   const didInitCard   = useRef(false)
   const didAnnounce   = useRef(false)
   const didFirstRoomLoad = useRef(false)
@@ -185,8 +187,10 @@ export default function GamePage({ roomCode, nickname, onLeave }: GamePageProps)
   async function handleReset() {
     didInitCard.current  = false
     didAnnounce.current  = false
-    setWordInput(DEFAULT_WORDS.join('\n'))
-    await updateWords(roomCode, DEFAULT_WORDS)
+    // Preserve the room's current words (which may be custom) instead of resetting to defaults
+    const currentWords = room?.words?.length ? room.words : DEFAULT_WORDS
+    setWordInput(currentWords.join('\n'))
+    await updateWords(roomCode, currentWords)
     await resetPlayerCards(roomCode)
     await resetGame(roomCode)
   }
@@ -195,6 +199,12 @@ export default function GamePage({ roomCode, nickname, onLeave }: GamePageProps)
     navigator.clipboard.writeText(roomCode)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  function handleToggleSound() {
+    const next = !soundOn
+    setSoundEnabled(next)
+    setSoundOn(next)
   }
 
   const handleSendMessage = useCallback((text: string) => {
@@ -213,8 +223,8 @@ export default function GamePage({ roomCode, nickname, onLeave }: GamePageProps)
   const winCells   = computedMarked.length === 25
     ? getWinConditionCells(computedMarked, winCondition)
     : new Set<number>()
-  const oneAwayCells = (room.status === 'playing' && !room.winner && computedMarked.length === 25 && winCondition === 'line')
-    ? getOneAwayCells(computedMarked)
+  const oneAwayCells = (room.status === 'playing' && !room.winner && computedMarked.length === 25)
+    ? getOneAwayCells(computedMarked, winCondition)
     : new Set<number>()
 
   if (room.status === 'ended') {
@@ -284,6 +294,8 @@ export default function GamePage({ roomCode, nickname, onLeave }: GamePageProps)
               }}
               computedMarked={computedMarked}
               cardTheme={cardTheme}
+              soundEnabled={soundOn}
+              onToggleSound={handleToggleSound}
             />
           )
       )}

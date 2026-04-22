@@ -1,6 +1,8 @@
 import Box from '@mui/material/Box'
 import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
+import VolumeUpIcon from '@mui/icons-material/VolumeUp'
+import VolumeOffIcon from '@mui/icons-material/VolumeOff'
 import BingoBoard from './BingoBoard'
 import Scoreboard from './Scoreboard'
 import EmojiReactions from './EmojiReactions'
@@ -26,11 +28,14 @@ interface PlayingViewProps {
   onUserBlocked: (targetNickname: string) => void
   computedMarked?: boolean[]
   cardTheme?: CardTheme
+  soundEnabled: boolean
+  onToggleSound: () => void
 }
 
 export default function PlayingView({
   room, player, players, nickname, winCells, oneAwayCells, reactions, onTileClick, onReact,
   messages, onSendMessage, blockedUsers, onUserBlocked, computedMarked, cardTheme,
+  soundEnabled, onToggleSound,
 }: PlayingViewProps) {
   const isHost = room.createdBy === nickname
   const displayMarked = computedMarked ?? player.marked
@@ -75,7 +80,7 @@ export default function PlayingView({
           />
 
           {/* Reaction bar */}
-          <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
+          <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5, alignItems: 'center' }}>
             {REACTION_EMOJIS.map(emoji => (
               <Tooltip key={emoji} title="React">
                 <IconButton
@@ -97,6 +102,26 @@ export default function PlayingView({
                 </IconButton>
               </Tooltip>
             ))}
+
+            <Tooltip title={soundEnabled ? 'Mute sounds' : 'Unmute sounds'}>
+              <IconButton
+                size="small"
+                onClick={onToggleSound}
+                sx={{
+                  ml: 'auto',
+                  width: 36,
+                  height: 36,
+                  borderRadius: 2,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  color: soundEnabled ? 'primary.main' : 'text.disabled',
+                  transition: 'transform 0.12s, background 0.12s, color 0.12s',
+                  '&:hover': { transform: 'scale(1.15)', background: 'rgba(255,255,255,0.08)' },
+                }}
+              >
+                {soundEnabled ? <VolumeUpIcon fontSize="small" /> : <VolumeOffIcon fontSize="small" />}
+              </IconButton>
+            </Tooltip>
           </Box>
         </Box>
 
