@@ -27,8 +27,6 @@ import { useState } from 'react'
 import { auth } from '../../firebase'
 import { isSoundEnabled, setSoundEnabled } from '../../sounds'
 
-const APP_URL = 'https://meeting-bingo-a52cc.web.app'
-
 interface GameHeaderProps {
   roomCode: string
   nickname: string
@@ -53,16 +51,21 @@ export default function GameHeader({ roomCode, nickname, copied, onCopyCode, onL
   }
 
   async function handleShare() {
-    const joinUrl = `${APP_URL}?room=${roomCode}`
+    const joinUrl = `${window.location.origin}?room=${roomCode}`
     const shareData = {
       title: 'Meeting Bingo',
       text: `Join my Meeting Bingo room! Use code ${roomCode} or tap the link:`,
       url: joinUrl,
     }
     if (navigator.share) {
-      await navigator.share(shareData)
+      try {
+        await navigator.share(shareData)
+      } catch {
+        // User cancelled share dialog
+      }
     } else {
-      await navigator.clipboard.writeText(`${shareData.text} ${joinUrl}`)
+      await navigator.clipboard.writeText(`${shareData.text}\n${joinUrl}`)
+      onCopyCode()
     }
   }
 
