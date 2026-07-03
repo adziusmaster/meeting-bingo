@@ -1,11 +1,12 @@
+import { useState } from 'react'
 import Paper from '@mui/material/Paper'
 import Typography from '@mui/material/Typography'
 import TextField from '@mui/material/TextField'
 import Button from '@mui/material/Button'
 import Chip from '@mui/material/Chip'
 import Box from '@mui/material/Box'
-import { DEFAULT_WORDS, WORD_CATEGORIES } from '../../constants'
-import type { WordCategory } from '../../constants'
+import { DEFAULT_WORDS, WORD_GROUPS } from '../../constants'
+import type { WordGroup } from '../../constants'
 
 interface WordEditorProps {
   wordInput: string
@@ -15,18 +16,8 @@ interface WordEditorProps {
   playerCount: number
 }
 
-const CATEGORY_ICONS: Record<WordCategory, string> = {
-  'Corporate Buzzwords': '💼',
-  'Tech Standup':        '💻',
-  'Sales Call':          '📞',
-  'Management':          '📊',
-  'HR & People':         '🧑‍💼',
-  'Product Meeting':     '🗺️',
-  'Design Review':       '🎨',
-  'Quarterly Update':    '📈',
-}
-
 export default function WordEditor({ wordInput, wordError, onChange, onStart, playerCount }: WordEditorProps) {
+  const [selectedGroup, setSelectedGroup] = useState<WordGroup | null>(null)
   const wordCount = wordInput.split('\n').filter(Boolean).length
   const needMorePlayers = playerCount < 2
 
@@ -57,23 +48,59 @@ export default function WordEditor({ wordInput, wordError, onChange, onStart, pl
         </Button>
       </Box>
 
-      {/* Category quick-picks */}
+      {/* Two-level category picker */}
       <Box>
-        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.75 }}>
-          Quick-load a category:
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
-          {(Object.keys(WORD_CATEGORIES) as WordCategory[]).map(cat => (
-            <Chip
-              key={cat}
-              label={`${CATEGORY_ICONS[cat]} ${cat}`}
-              size="small"
-              clickable
-              onClick={() => onChange(WORD_CATEGORIES[cat].join('\n'))}
-              sx={{ fontSize: '0.72rem' }}
-            />
-          ))}
-        </Box>
+        {selectedGroup === null ? (
+          <>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.75 }}>
+              Quick-load a category:
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+              {WORD_GROUPS.map(group => (
+                <Chip
+                  key={group.name}
+                  label={`${group.emoji} ${group.name}`}
+                  size="small"
+                  clickable
+                  onClick={() => setSelectedGroup(group)}
+                  sx={{ fontSize: '0.72rem' }}
+                />
+              ))}
+            </Box>
+          </>
+        ) : (
+          <>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.75 }}>
+              <Chip
+                label={`← ${selectedGroup.emoji} ${selectedGroup.name}`}
+                size="small"
+                clickable
+                onClick={() => setSelectedGroup(null)}
+                sx={{ fontSize: '0.72rem' }}
+              />
+              <Typography variant="caption" color="text.secondary">
+                Pick a list:
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+              {selectedGroup.lists.map(list => (
+                <Chip
+                  key={list.name}
+                  label={`${list.emoji} ${list.name}`}
+                  size="small"
+                  clickable
+                  color="primary"
+                  variant="outlined"
+                  onClick={() => {
+                    onChange(list.words.join('\n'))
+                    setSelectedGroup(null)
+                  }}
+                  sx={{ fontSize: '0.72rem' }}
+                />
+              ))}
+            </Box>
+          </>
+        )}
       </Box>
 
       <Typography variant="caption" color="text.secondary">
