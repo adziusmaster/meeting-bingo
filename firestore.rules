@@ -1,0 +1,49 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Rooms ──────────────────────────────────────────────────
+    match /rooms/{roomCode} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null;
+
+      match /players/{nickname} {
+        allow read: if true;
+        allow create: if request.auth != null;
+        // Players may only update their own document
+        allow update: if request.auth != null
+          && get(/databases/$(database)/documents/userNicks/$(request.auth.uid)).data.nickname == nickname;
+      }
+
+      match /messages/{msgId} {
+        allow read: if true;
+        allow create: if request.auth != null;
+      }
+
+      match /reactions/{reactionId} {
+        allow read: if true;
+        allow create: if request.auth != null;
+      }
+    }
+
+    // ── Users ──────────────────────────────────────────────────
+    match /users/{nickname} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && get(/databases/$(database)/documents/userNicks/$(request.auth.uid)).data.nickname == nickname;
+    }
+
+    // ── Nick → UID mapping ─────────────────────────────────────
+    match /userNicks/{uid} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // ── Wins (leaderboard) ─────────────────────────────────────
+    match /wins/{winId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+    }
+  }
+}
