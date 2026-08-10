@@ -14,6 +14,26 @@ interface AdBannerProps {
   format?: 'auto' | 'rectangle'
 }
 
+const LOADER_SRC =
+  `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`
+
+/**
+ * Inject the AdSense loader on demand.
+ *
+ * It is deliberately NOT in index.html: a global loader lets Auto ads place ads
+ * on every screen, including login / lobby / settings / "waiting for host",
+ * which have no publisher content and breach AdSense policy. Loading it only
+ * where an ad slot actually renders keeps ads off those screens.
+ */
+function ensureLoader() {
+  if (document.querySelector(`script[src^="${LOADER_SRC}"]`)) return
+  const s = document.createElement('script')
+  s.async = true
+  s.src = LOADER_SRC
+  s.crossOrigin = 'anonymous'
+  document.head.appendChild(s)
+}
+
 export default function AdBanner({ format = 'auto' }: AdBannerProps) {
   const pushed = useRef(false)
 
@@ -21,6 +41,7 @@ export default function AdBanner({ format = 'auto' }: AdBannerProps) {
     if (pushed.current || !import.meta.env.PROD || !FLAGS.ADS_ENABLED) return
     try {
       pushed.current = true
+      ensureLoader()
       ;(window.adsbygoogle = window.adsbygoogle || []).push({})
     } catch {
       // AdSense script not yet loaded — safe to ignore

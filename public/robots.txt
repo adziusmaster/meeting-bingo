@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+# Routing is client-side React state, so every path renders the same app shell.
+# Room links are ephemeral game state, not content — keep them out of the index.
+Disallow: /*?room=

@@ -11,7 +11,6 @@ import Chip from '@mui/material/Chip'
 import SettingsIcon from '@mui/icons-material/Settings'
 import { createRoom, joinRoom } from '../firebase'
 import { DEFAULT_WORDS } from '../constants'
-import AdBanner from '../components/AdBanner'
 import type { WinCondition } from '../types'
 
 interface LobbyPageProps {
@@ -171,8 +170,6 @@ export default function LobbyPage({ nickname, onJoin, onSettings }: LobbyPagePro
             {error}
           </Typography>
         )}
-
-        <AdBanner format="rectangle" />
       </Paper>
     </Box>
   )
